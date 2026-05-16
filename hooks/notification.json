@@ -1,13 +1,6 @@
 {
   "version": 1,
   "hooks": {
-    "sessionStart": [
-      {
-        "type": "command",
-        "bash": "~/.copilot/hooks/scripts/set-title.sh",
-        "timeoutSec": 5
-      }
-    ],
     "agentStop": [
       {
         "type": "command",
