@@ -64,3 +64,52 @@ ls -la ~/.tmux.conf \
 - tmux 설정 적용: `tmux source ~/.tmux.conf` 또는 새 세션 시작
 - Copilot hooks 적용: CLI 재시작 필요
 - SSH + tmux 환경에서 iTerm2 알림을 받으려면 tmux `allow-passthrough` 설정 필요 (tmux.conf에 포함됨)
+
+## Onboarding: 필수 도구 설치
+
+### macOS (brew)
+
+```bash
+# zsh 플러그인 + fzf
+brew install zsh-autosuggestions zsh-completions fzf
+
+# .zshrc에 추가
+cat << 'EOF' >> ~/.zshrc
+# zsh-autosuggestions
+source /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+# zsh-completions
+FPATH=/usr/local/share/zsh-completions:$FPATH
+autoload -Uz compinit && compinit
+
+# fzf
+source <(fzf --zsh)
+EOF
+```
+
+### Debian/Ubuntu (apt)
+
+```bash
+sudo apt install -y zsh-autosuggestions zsh-completions fzf
+
+# .zshrc에 추가
+cat << 'EOF' >> ~/.zshrc
+# zsh-autosuggestions
+source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+# zsh-completions
+FPATH=/usr/share/zsh-completions:$FPATH
+autoload -Uz compinit && compinit
+
+# fzf
+source <(fzf --zsh)
+EOF
+```
+
+### 기타 필수 도구
+
+```bash
+# jq (hook 스크립트에서 사용)
+brew install jq   # macOS
+sudo apt install -y jq   # Debian/Ubuntu
+```
