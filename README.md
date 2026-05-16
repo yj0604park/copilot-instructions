@@ -6,12 +6,13 @@
 
 ```
 ├── README.md
-├── instructions.md       # Copilot CLI 커스텀 지시사항
+├── instructions.md            # Copilot CLI 커스텀 지시사항
 ├── hooks/
-│   ├── notification.json  # agentStop 알림 hook
-│   └── post-task.sh       # 수동 알림 스크립트
-├── tmux.conf              # tmux 설정
-└── vimrc                  # vim 설정
+│   ├── notification.json      # agentStop hook 설정
+│   └── scripts/
+│       └── notify.sh          # 알림 스크립트 (마지막 응답 내용 표시)
+├── tmux.conf                  # tmux 설정
+└── vimrc                      # vim 설정
 ```
 
 ## 설치 (새 환경 셋업)
@@ -32,16 +33,31 @@ mkdir -p ~/.copilot
 ln -sf $(pwd)/instructions.md ~/.copilot/copilot-instructions.md
 
 # 5. Copilot CLI hooks
-mkdir -p ~/.copilot/hooks
+mkdir -p ~/.copilot/hooks/scripts
 ln -sf $(pwd)/hooks/notification.json ~/.copilot/hooks/notification.json
+ln -sf $(pwd)/hooks/scripts/notify.sh ~/.copilot/hooks/scripts/notify.sh
 ```
 
 ## 설치 확인
 
 ```bash
 # symlink 확인
-ls -la ~/.tmux.conf ~/.vimrc ~/.copilot/copilot-instructions.md ~/.copilot/hooks/notification.json
+ls -la ~/.tmux.conf \
+       ~/.vimrc \
+       ~/.copilot/copilot-instructions.md \
+       ~/.copilot/hooks/notification.json \
+       ~/.copilot/hooks/scripts/notify.sh
 ```
+
+## Hook 동작 방식
+
+`agentStop` hook이 Copilot CLI 응답이 끝날 때마다 실행:
+
+1. `sessionId`로 `~/.copilot/session-state/{id}/events.jsonl`을 찾음
+2. 마지막 assistant 메시지를 파싱 (최대 80자)
+3. tmux passthrough로 iTerm2 알림 전송
+
+**요구사항:** `jq`, `tmux`, tmux `allow-passthrough` 설정 (tmux.conf에 포함됨)
 
 ## 참고
 
