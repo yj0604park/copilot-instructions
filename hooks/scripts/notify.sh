@@ -15,6 +15,7 @@ if [ -n "$SESSION_ID" ] && [ -f "$EVENTS_FILE" ]; then
   LAST_MSG=$(grep '"assistant.message"' "$EVENTS_FILE" \
     | tail -1 \
     | jq -r '.data.content // empty' 2>/dev/null \
+    | tr '\n' ' ' \
     | head -c 80)
   if [ -n "$LAST_MSG" ]; then
     SUMMARY="$LAST_MSG"
