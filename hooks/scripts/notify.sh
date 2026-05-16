@@ -17,7 +17,7 @@ if [ -n "$SESSION_ID" ] && [ -f "$EVENTS_FILE" ]; then
     | tail -1 \
     | jq -r '.data.content // empty' 2>/dev/null \
     | tr '\n' ' ' \
-    | head -c 80)
+    | cut -c1-80)
   if [ -n "$LAST_MSG" ]; then
     SUMMARY="$LAST_MSG"
   fi
