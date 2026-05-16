@@ -71,6 +71,14 @@ if command -v fzf >/dev/null 2>&1; then
 fi
 
 # ─────────────────────────────────────────────
+# atuin (shell history sync: Ctrl+R 대체)
+# fzf보다 먼저 init하면 Ctrl+R을 atuin이 가져감
+# ─────────────────────────────────────────────
+if command -v atuin >/dev/null 2>&1; then
+  eval "$(atuin init zsh)"
+fi
+
+# ─────────────────────────────────────────────
 # zoxide (smart cd: z <keyword>, zi for interactive)
 # ─────────────────────────────────────────────
 if command -v zoxide >/dev/null 2>&1; then

@@ -56,7 +56,7 @@ install_pkg() {
 }
 
 if [[ "$PM" == "brew" ]]; then
-  install_pkg zsh tmux jq fzf zsh-autosuggestions zsh-completions starship zoxide
+  install_pkg zsh tmux jq fzf zsh-autosuggestions zsh-completions starship zoxide atuin
 else
   # apt에 zsh-completions 없음 → git clone 으로 따로 처리
   # zoxide는 Debian 12+ / Ubuntu 22.04+ 에만 있어서 fallback 처리

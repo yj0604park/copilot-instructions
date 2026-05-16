@@ -30,6 +30,7 @@
 | **tmux** | 터미널 멀티플렉서 (분할, 세션 유지) | `Ctrl+A`(prefix), 분할: `%`(가로) `"`(세로), 세션: `tmux new -s name` |
 | **fzf** | 퍼지 파인더 (파일, 히스토리, 프로세스 검색) | `Ctrl+R`(히스토리), `Ctrl+T`(파일), `Alt+C`(디렉토리) |
 | **zoxide** | 스마트 cd (방문 빈도 기반 디렉토리 점프) | `z foo` (foo 포함 디렉토리로 이동), `zi` (인터랙티브 선택) |
+| **atuin** | 셸 히스토리 동기화/검색 (기기 간 암호화 동기화) | `Ctrl+R` (히스토리 검색), 디렉토리별/성공실패별 필터, 통계 |
 | **jq** | JSON 파서/필터 | `cat file.json \| jq '.key'`, `curl api \| jq '.data[]'` |
 | **vim** | 텍스트 에디터 | 구문 강조, 줄번호, 검색 하이라이트 설정됨 |
 
@@ -49,6 +50,21 @@
 | **notification** (`notify-event.sh`) | 비동기 이벤트(셸 완료 등) 시 iTerm2 알림 |
 
 > tmux + iTerm2 환경에서 동작. SSH 원격 작업 중에도 알림 수신 가능.
+
+### macOS 앱
+
+| 앱 | 설명 |
+|---|---|
+| **iTerm2** | 터미널 에뮬레이터 (tmux 통합, 프로필, Shell Integration) |
+| **Karabiner-Elements** | 키보드 리맵핑 (CapsLock→Esc, 한영키 등 커스텀) |
+| **HazeOver** | 비활성 창 어둡게 처리 (집중 모드) |
+| **Hidden Bar** | 메뉴바 아이콘 숨기기/정리 |
+| **Itsycal** | 메뉴바 미니 캘린더 |
+| **Tailscale** | 메시 VPN (기기 간 안전한 네트워크 연결) |
+| **DisplayLink Manager** | USB/네트워크 외부 모니터 연결 |
+| **Obsidian** | 마크다운 기반 지식 관리/노트 |
+| **Cursor** | AI 코드 에디터 (VS Code 포크) |
+| **Visual Studio Code** | 코드 에디터 |
 
 ### Starship 프롬프트 표시 항목
 
