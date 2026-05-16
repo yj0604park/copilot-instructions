@@ -6,6 +6,7 @@ format = """
 [╰─](bold green)$character"""
 
 add_newline = true
+command_timeout = 1000
 
 [character]
 success_symbol = "[➜](bold green)"
@@ -34,6 +35,7 @@ style = "bold purple"
 format = "[$symbol$branch]($style) "
 
 [git_status]
+disabled = false
 style = "bold red"
 ahead = "⇡${count} "
 behind = "⇣${count} "
