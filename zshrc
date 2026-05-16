@@ -57,6 +57,11 @@ if command -v fzf >/dev/null 2>&1; then
   fi
 fi
 
+# zoxide (smart cd: z <keyword>, zi for interactive)
+if command -v zoxide >/dev/null 2>&1; then
+  eval "$(zoxide init zsh)"
+fi
+
 
 # --- Added from user's /Users/yoonjaepark/.zshrc on 20260516015422 ---
 # If you come from bash you might have to change your $PATH.

@@ -32,8 +32,8 @@ exec zsh
 `install.sh`가 자동으로:
 
 1. OS 감지 (macOS=brew / Debian=apt)
-2. 패키지 설치 (`zsh tmux jq fzf zsh-autosuggestions zsh-completions starship`)
-   - apt에 없는 패키지(`zsh-completions`, `starship`)는 git clone / 공식 install.sh로 fallback
+2. 패키지 설치 (`zsh tmux jq fzf zsh-autosuggestions zsh-completions starship zoxide`)
+   - apt에 없는 패키지(`zsh-completions`, `starship`, `zoxide`)는 git clone / 공식 install.sh로 fallback
 3. 모든 dotfile symlink 생성 (기존 파일은 `.bak` 으로 백업)
 4. `check-symlinks.sh`로 검증
 

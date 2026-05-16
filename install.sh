@@ -56,10 +56,16 @@ install_pkg() {
 }
 
 if [[ "$PM" == "brew" ]]; then
-  install_pkg zsh tmux jq fzf zsh-autosuggestions zsh-completions starship
+  install_pkg zsh tmux jq fzf zsh-autosuggestions zsh-completions starship zoxide
 else
   # apt에 zsh-completions 없음 → git clone 으로 따로 처리
+  # zoxide는 Debian 12+ / Ubuntu 22.04+ 에만 있어서 fallback 처리
   install_pkg zsh tmux jq fzf zsh-autosuggestions vim curl
+  if ! have zoxide; then
+    if apt-cache show zoxide >/dev/null 2>&1; then
+      install_pkg zoxide
+    fi
+  fi
 fi
 ok "패키지 설치 완료"
 
@@ -82,6 +88,18 @@ if ! have starship; then
   ok "starship 설치 (~/.local/bin)"
 else
   ok "starship 이미 설치됨"
+fi
+
+# ─────────────────────────────────────────────
+# 4-1) zoxide (apt에 없으면 install.sh)
+# ─────────────────────────────────────────────
+if ! have zoxide; then
+  log "zoxide 설치 중..."
+  mkdir -p "$HOME/.local/bin"
+  curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh -s -- --bin-dir "$HOME/.local/bin"
+  ok "zoxide 설치 (~/.local/bin)"
+else
+  ok "zoxide 이미 설치됨"
 fi
 
 # ─────────────────────────────────────────────
