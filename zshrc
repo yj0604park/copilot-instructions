@@ -16,6 +16,12 @@ bindkey "^[[5D" backward-word
 bindkey "^[[1;5C" forward-word  
 bindkey "^[[5C" forward-word  
 
+# Option+Arrow (iTerm2 + tmux)
+bindkey "^[[1;3D" backward-word
+bindkey "^[[1;3C" forward-word
+bindkey "^[b" backward-word
+bindkey "^[f" forward-word
+
 export PATH="$HOME/.local/bin:$PATH"
 
 # zsh-autosuggestions
