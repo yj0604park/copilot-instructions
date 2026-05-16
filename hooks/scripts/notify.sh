@@ -23,6 +23,6 @@ fi
 if [ -n "$TMUX_PANE" ]; then
   tty=$(tmux display-message -p -t "$TMUX_PANE" '#{pane_tty}' 2>/dev/null)
   if [ -n "$tty" ]; then
-    printf '\ePtmux;\e\e]9;Copilot: %s\e\e\\\e\\' "$SUMMARY" > "$tty" 2>/dev/null
+    printf '\ePtmux;\e\e]9;Copilot: %s\a\e\\' "$SUMMARY" > "$tty" 2>/dev/null
   fi
 fi
