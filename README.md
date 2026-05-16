@@ -34,8 +34,18 @@ exec zsh
 1. OS 감지 (macOS=brew / Debian=apt)
 2. 패키지 설치 (`zsh tmux jq fzf zsh-autosuggestions zsh-completions starship zoxide`)
    - apt에 없는 패키지(`zsh-completions`, `starship`, `zoxide`)는 git clone / 공식 install.sh로 fallback
-3. 모든 dotfile symlink 생성 (기존 파일은 `.bak` 으로 백업)
-4. `check-symlinks.sh`로 검증
+3. **oh-my-zsh** 설치 + 외부 plugin clone (`zsh-autosuggestions`, `zsh-syntax-highlighting`)
+   - `--unattended --keep-zshrc` 옵션으로 셸 변경/zshrc 덮어쓰기 안 함
+4. 모든 dotfile symlink 생성 (기존 파일은 `.bak` 으로 백업)
+5. `check-symlinks.sh`로 검증
+
+## 셸 구성
+
+- **Prompt:** starship (oh-my-zsh `ZSH_THEME=""`로 끄고 starship이 담당)
+- **Plugins:** `git`, `zsh-autosuggestions`, `zsh-syntax-highlighting`
+- **History/completion/dir 옵션:** oh-my-zsh lib 기본값 사용
+- **Smart cd:** `zoxide` — `z foo`, `zi` (interactive)
+- **Fuzzy finder:** `fzf` (cross-platform 로더)
 
 ## 설치 후 할 일
 

@@ -103,6 +103,39 @@ else
 fi
 
 # ─────────────────────────────────────────────
+# 4-2) oh-my-zsh (공식 installer, unattended, zshrc 보존)
+# ─────────────────────────────────────────────
+if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
+  log "oh-my-zsh 설치 중..."
+  RUNZSH=no CHSH=no KEEP_ZSHRC=yes sh -c \
+    "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" \
+    --unattended --keep-zshrc
+  ok "oh-my-zsh 설치"
+else
+  ok "oh-my-zsh 이미 설치됨"
+fi
+
+# ─────────────────────────────────────────────
+# 4-3) oh-my-zsh 외부 plugins
+# ─────────────────────────────────────────────
+OMZ_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+mkdir -p "$OMZ_CUSTOM/plugins"
+
+clone_omz_plugin() {
+  local name="$1" url="$2"
+  local dst="$OMZ_CUSTOM/plugins/$name"
+  if [[ -d "$dst/.git" ]]; then
+    ok "oh-my-zsh plugin: $name 이미 설치됨"
+  else
+    git clone --depth 1 "$url" "$dst"
+    ok "oh-my-zsh plugin: $name 설치"
+  fi
+}
+
+clone_omz_plugin zsh-autosuggestions     https://github.com/zsh-users/zsh-autosuggestions.git
+clone_omz_plugin zsh-syntax-highlighting  https://github.com/zsh-users/zsh-syntax-highlighting.git
+
+# ─────────────────────────────────────────────
 # 5) Symlink 셋업
 # ─────────────────────────────────────────────
 log "symlink 생성 중..."
