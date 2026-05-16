@@ -1,5 +1,66 @@
 # GitHub Copilot CLI 기능 총정리
 
+---
+
+## 0. copilot-instructions repo에서 설치하는 도구들
+
+`install.sh`로 한 번에 설치되는 프로그램들과 주요 기능.
+
+### 셸 & 프레임워크
+
+| 도구 | 설명 | 주요 사용법 |
+|---|---|---|
+| **zsh** | 기본 셸 (bash 대체) | `chsh -s $(which zsh)` |
+| **oh-my-zsh** | zsh 플러그인/테마 프레임워크 | 자동 로드 (`~/.oh-my-zsh`) |
+
+### oh-my-zsh 플러그인
+
+| 플러그인 | 설명 |
+|---|---|
+| **git** | git 단축 명령어 (`gst`=status, `gco`=checkout, `gp`=push, `gl`=pull 등) |
+| **zsh-autosuggestions** | 이전 명령어 기반 자동 완성 (회색 텍스트, `→`로 적용) |
+| **zsh-syntax-highlighting** | 명령어 실시간 구문 강조 (유효=초록, 에러=빨강) |
+| **zsh-completions** | 추가 탭 완성 정의 (brew, docker, kubectl 등) |
+
+### 터미널 도구
+
+| 도구 | 설명 | 주요 사용법 |
+|---|---|---|
+| **starship** | 크로스 셸 프롬프트 (Git 브랜치, 언어 버전, 실행시간 표시) | 자동 적용, `~/.config/starship.toml`로 커스텀 |
+| **tmux** | 터미널 멀티플렉서 (분할, 세션 유지) | `Ctrl+A`(prefix), 분할: `%`(가로) `"`(세로), 세션: `tmux new -s name` |
+| **fzf** | 퍼지 파인더 (파일, 히스토리, 프로세스 검색) | `Ctrl+R`(히스토리), `Ctrl+T`(파일), `Alt+C`(디렉토리) |
+| **zoxide** | 스마트 cd (방문 빈도 기반 디렉토리 점프) | `z foo` (foo 포함 디렉토리로 이동), `zi` (인터랙티브 선택) |
+| **jq** | JSON 파서/필터 | `cat file.json \| jq '.key'`, `curl api \| jq '.data[]'` |
+| **vim** | 텍스트 에디터 | 구문 강조, 줄번호, 검색 하이라이트 설정됨 |
+
+### 언어 툴체인 (zshrc에서 로드)
+
+| 도구 | 설명 |
+|---|---|
+| **fnm** | Node.js 버전 관리자 (`fnm use 20`, `fnm install --lts`) |
+| **SDKMAN** | JVM 언어 버전 관리 (`sdk install java`, `sdk use scala 2.12`) |
+| **Rust/Cargo** | `~/.cargo/env` 자동 로드 |
+
+### Copilot Hooks (자동 알림)
+
+| Hook | 동작 |
+|---|---|
+| **agentStop** (`notify.sh`) | Copilot 응답 완료 시 iTerm2 알림 전송 (마지막 메시지 80자 요약) |
+| **notification** (`notify-event.sh`) | 비동기 이벤트(셸 완료 등) 시 iTerm2 알림 |
+
+> tmux + iTerm2 환경에서 동작. SSH 원격 작업 중에도 알림 수신 가능.
+
+### Starship 프롬프트 표시 항목
+
+현재 `starship.toml`에서 표시하는 정보:
+- 사용자명@호스트명, 디렉토리 경로
+- Git 브랜치, 상태 (수정/스테이지/충돌/untracked 등)
+- Docker context
+- 언어 버전: Python, Node.js, Rust, Go, Java, Kotlin, Swift
+- 패키지 버전, 명령 실행 시간 (2초 이상), 백그라운드 작업 수
+
+---
+
 ## 1. 슬래시 명령어 (Slash Commands)
 
 ### 기본
