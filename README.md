@@ -9,7 +9,6 @@
 ├── instructions.md            # Copilot CLI 커스텀 지시사항
 ├── hooks/
 │   ├── notification.json      # agentStop hook 설정
-│   ├── notify.py              # macOS 네이티브 알림 (osascript)
 │   └── scripts/
 │       └── notify.sh          # tmux/iTerm2 알림 스크립트
 ├── tmux.conf                  # tmux 설정
@@ -36,7 +35,6 @@ ln -sf $(pwd)/instructions.md ~/.copilot/copilot-instructions.md
 # 5. Copilot CLI hooks
 mkdir -p ~/.copilot/hooks/scripts
 ln -sf $(pwd)/hooks/notification.json ~/.copilot/hooks/notification.json
-ln -sf $(pwd)/hooks/notify.py ~/.copilot/hooks/notify.py
 ln -sf $(pwd)/hooks/scripts/notify.sh ~/.copilot/hooks/scripts/notify.sh
 ```
 
@@ -48,7 +46,6 @@ ls -la ~/.tmux.conf \
        ~/.vimrc \
        ~/.copilot/copilot-instructions.md \
        ~/.copilot/hooks/notification.json \
-       ~/.copilot/hooks/notify.py \
        ~/.copilot/hooks/scripts/notify.sh
 ```
 
