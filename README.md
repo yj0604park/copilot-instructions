@@ -7,6 +7,7 @@
 
 ```
 ├── install.sh                 # 새 환경 한 방 셋업 스크립트
+├── Brewfile                   # macOS brew 패키지 + cask 앱 목록
 ├── check-symlinks.sh          # symlink 상태 점검
 ├── instructions.md            # Copilot CLI 커스텀 지시사항
 ├── hooks/
@@ -32,8 +33,8 @@ exec zsh
 `install.sh`가 자동으로:
 
 1. OS 감지 (macOS=brew / Debian=apt)
-2. 패키지 설치 (`zsh tmux jq fzf zsh-autosuggestions zsh-completions starship zoxide`)
-   - apt에 없는 패키지(`zsh-completions`, `starship`, `zoxide`)는 git clone / 공식 install.sh로 fallback
+2. **macOS:** `Brewfile`로 CLI 도구 + GUI 앱 + 폰트 일괄 설치
+   - **Linux:** apt로 CLI 도구 설치 (GUI 앱은 수동)
 3. **oh-my-zsh** 설치 + 외부 plugin clone (`zsh-autosuggestions`, `zsh-syntax-highlighting`)
    - `--unattended --keep-zshrc` 옵션으로 셸 변경/zshrc 덮어쓰기 안 함
 4. 모든 dotfile symlink 생성 (기존 파일은 `.bak` 으로 백업)

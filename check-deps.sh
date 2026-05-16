@@ -28,6 +28,7 @@ check curl       "brew install curl"
 echo
 echo "── 선택 프로그램 ──"
 check gh         "brew install gh (GitHub CLI)"
+check atuin      "brew install atuin (shell history sync)"
 check node       "brew install node"
 check python3    "brew install python3"
 check vim        "brew install vim"
