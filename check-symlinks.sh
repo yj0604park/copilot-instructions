@@ -1,7 +1,7 @@
 #!/bin/bash
 # Check if Copilot config files are properly symlinked
 
-REPO_DIR="$HOME/Workspace/copilot-instructions"
+REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 COPILOT_HOME="${COPILOT_HOME:-$HOME/.copilot}"
 
 FILES=(
