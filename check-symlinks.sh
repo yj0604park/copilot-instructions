@@ -12,6 +12,7 @@ FILES=(
   "$HOME/.tmux.conf"
   "$HOME/.vimrc"
   "$HOME/.zshrc"
+  "$HOME/.config/starship.toml"
 )
 
 OK=0

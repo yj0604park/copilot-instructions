@@ -23,6 +23,12 @@ bindkey "^[f" forward-word
 
 export PATH="$HOME/.local/bin:$PATH"
 
+# starship prompt
+if command -v starship >/dev/null 2>&1; then
+  export STARSHIP_CONFIG="$HOME/.config/starship.toml"
+  eval "$(starship init zsh)"
+fi
+
 # zsh-autosuggestions
 for f in \
   "$(brew --prefix 2>/dev/null)/share/zsh-autosuggestions/zsh-autosuggestions.zsh" \

@@ -1,0 +1,53 @@
+# Starship config — cross-platform prompt
+# Nerd Font 권장 (https://www.nerdfonts.com/)
+# Nerd Font 없으면 아래 character/symbol 들을 ASCII로 바꿔서 사용
+
+format = """
+[╭─](bold green)$username[@](bold green)$hostname$directory$git_branch$git_status$git_state$python$nodejs$cmd_duration
+[╰─](bold green)$character"""
+
+add_newline = true
+
+[character]
+success_symbol = "[➜](bold green)"
+error_symbol = "[✗](bold red)"
+
+[username]
+show_always = true
+style_user = "bold yellow"
+style_root = "bold red"
+format = "[$user]($style)"
+
+[hostname]
+ssh_only = false
+style = "bold cyan"
+format = "[$hostname]($style) "
+
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+style = "bold blue"
+format = "[$path]($style)[$read_only]($read_only_style) "
+read_only = " 🔒"
+
+[git_branch]
+symbol = " "
+style = "bold purple"
+format = "on [$symbol$branch]($style) "
+
+[git_status]
+style = "bold red"
+format = "[$all_status$ahead_behind]($style) "
+
+[cmd_duration]
+min_time = 2_000
+style = "yellow"
+format = "took [$duration]($style) "
+
+[python]
+symbol = " "
+format = '[$symbol$version( \($virtualenv\))]($style) '
+
+[nodejs]
+symbol = " "
+format = "[$symbol$version]($style) "
