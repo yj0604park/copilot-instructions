@@ -1,4 +1,3 @@
-
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
@@ -40,7 +39,7 @@ for d in \
   "$HOME/.zsh-completions/src"; do
   [[ -d "$d" ]] && FPATH="$d:$FPATH"
 done
-autoload -Uz compinit && compinit
+autoload -Uz compinit && compinit -u
 
 # fzf
 if command -v fzf >/dev/null 2>&1; then
