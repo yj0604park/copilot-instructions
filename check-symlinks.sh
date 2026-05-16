@@ -1,7 +1,7 @@
 #!/bin/bash
 # Check if Copilot config files are properly symlinked
 
-REPO_DIR="$HOME/services/copilot-instructions"
+REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 COPILOT_HOME="${COPILOT_HOME:-$HOME/.copilot}"
 
 FILES=(
@@ -12,6 +12,7 @@ FILES=(
   "$HOME/.tmux.conf"
   "$HOME/.vimrc"
   "$HOME/.zshrc"
+  "$HOME/.config/starship.toml"
 )
 
 OK=0

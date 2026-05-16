@@ -1,4 +1,3 @@
-
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
@@ -24,15 +23,39 @@ bindkey "^[f" forward-word
 
 export PATH="$HOME/.local/bin:$PATH"
 
+# starship prompt
+if command -v starship >/dev/null 2>&1; then
+  export STARSHIP_CONFIG="$HOME/.config/starship.toml"
+  eval "$(starship init zsh)"
+fi
+
 # zsh-autosuggestions
-source /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+for f in \
+  "$(brew --prefix 2>/dev/null)/share/zsh-autosuggestions/zsh-autosuggestions.zsh" \
+  /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh \
+  /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh; do
+  [[ -f "$f" ]] && source "$f" && break
+done
 
 # zsh-completions
-FPATH=/usr/local/share/zsh-completions:$FPATH
-autoload -Uz compinit && compinit
+for d in \
+  "$(brew --prefix 2>/dev/null)/share/zsh-completions" \
+  /usr/local/share/zsh-completions \
+  /usr/share/zsh-completions \
+  "$HOME/.zsh-completions/src"; do
+  [[ -d "$d" ]] && FPATH="$d:$FPATH"
+done
+autoload -Uz compinit && compinit -u
 
 # fzf
-source <(fzf --zsh)
+if command -v fzf >/dev/null 2>&1; then
+  if fzf --zsh >/dev/null 2>&1; then
+    source <(fzf --zsh)
+  else
+    [[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ]] && source /usr/share/doc/fzf/examples/key-bindings.zsh
+    [[ -f /usr/share/doc/fzf/examples/completion.zsh ]] && source /usr/share/doc/fzf/examples/completion.zsh
+  fi
+fi
 
 
 # --- Added from user's /Users/yoonjaepark/.zshrc on 20260516015422 ---
