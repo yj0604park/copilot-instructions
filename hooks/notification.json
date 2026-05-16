@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "hooks": {
+    "agentStop": [
+      {
+        "type": "command",
+        "bash": "for tty in $(tmux list-panes -a -F '#{pane_tty}' 2>/dev/null); do printf '\\ePtmux;\\e\\e]9;Copilot: 작업 완료!\\a\\e\\\\' > \"$tty\" 2>/dev/null; done",
+        "timeoutSec": 5
+      }
+    ]
+  }
+}
