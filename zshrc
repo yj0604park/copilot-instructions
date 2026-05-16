@@ -25,11 +25,27 @@ bindkey "^[f" forward-word
 export PATH="$HOME/.local/bin:$PATH"
 
 # zsh-autosuggestions
-source /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+for f in \
+  /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh \
+  /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh; do
+  [[ -f "$f" ]] && source "$f" && break
+done
 
 # zsh-completions
-FPATH=/usr/local/share/zsh-completions:$FPATH
+for d in \
+  /usr/local/share/zsh-completions \
+  /usr/share/zsh-completions \
+  "$HOME/.zsh-completions/src"; do
+  [[ -d "$d" ]] && FPATH="$d:$FPATH"
+done
 autoload -Uz compinit && compinit
 
 # fzf
-source <(fzf --zsh)
+if command -v fzf >/dev/null 2>&1; then
+  if fzf --zsh >/dev/null 2>&1; then
+    source <(fzf --zsh)
+  else
+    [[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ]] && source /usr/share/doc/fzf/examples/key-bindings.zsh
+    [[ -f /usr/share/doc/fzf/examples/completion.zsh ]] && source /usr/share/doc/fzf/examples/completion.zsh
+  fi
+fi
