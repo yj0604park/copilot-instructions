@@ -35,18 +35,35 @@ check vim        "brew install vim"
 
 echo
 echo "── zsh 플러그인 ──"
-ZSH_AUTO="$(brew --prefix 2>/dev/null)/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
-if [[ -f "$ZSH_AUTO" ]]; then
-  ok "zsh-autosuggestions"
+BREW_PREFIX="$(brew --prefix 2>/dev/null)"
+ZSH_AUTO_PATHS=(
+  "$BREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+  "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+  "$HOME/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
+)
+found=""
+for p in "${ZSH_AUTO_PATHS[@]}"; do
+  [[ -n "$p" && -f "$p" ]] && { found="$p"; break; }
+done
+if [[ -n "$found" ]]; then
+  ok "zsh-autosuggestions ($found)"
 else
-  miss "zsh-autosuggestions" "brew install zsh-autosuggestions"
+  miss "zsh-autosuggestions" "brew install zsh-autosuggestions / apt install zsh-autosuggestions"
 fi
 
-ZSH_COMP="$(brew --prefix 2>/dev/null)/share/zsh-completions"
-if [[ -d "$ZSH_COMP" ]]; then
-  ok "zsh-completions"
+ZSH_COMP_PATHS=(
+  "$BREW_PREFIX/share/zsh-completions"
+  "/usr/share/zsh-completions"
+  "$HOME/.zsh/zsh-completions"
+)
+found=""
+for p in "${ZSH_COMP_PATHS[@]}"; do
+  [[ -n "$p" && -d "$p" ]] && { found="$p"; break; }
+done
+if [[ -n "$found" ]]; then
+  ok "zsh-completions ($found)"
 else
-  miss "zsh-completions" "brew install zsh-completions"
+  miss "zsh-completions" "brew install zsh-completions / git clone https://github.com/zsh-users/zsh-completions ~/.zsh/zsh-completions"
 fi
 
 echo
@@ -55,6 +72,8 @@ if fc-list 2>/dev/null | grep -qi "nerd\|meslo.*nf\|jetbrains.*nf\|fira.*nf"; th
   ok "Nerd Font 감지됨"
 elif [[ -d "$HOME/Library/Fonts" ]] && ls "$HOME/Library/Fonts" 2>/dev/null | grep -qi "nerd\|meslo.*nf\|jetbrains.*nf\|fira.*nf"; then
   ok "Nerd Font 감지됨 (~/Library/Fonts)"
+elif [[ ! -t 1 ]] || [[ -z "${DISPLAY:-}${WAYLAND_DISPLAY:-}" && "$(uname)" != "Darwin" ]]; then
+  ok "Nerd Font (headless 환경, skip)"
 else
   miss "Nerd Font" "https://www.nerdfonts.com/ 에서 설치 (starship 아이콘용)"
 fi
