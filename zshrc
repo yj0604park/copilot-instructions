@@ -23,6 +23,10 @@ bindkey "^[f" forward-word
 
 export PATH="$HOME/.local/bin:$PATH"
 
+# terminal title: show pwd (precmd) and running command (preexec)
+precmd() { print -Pn "\e]0;%~\a" }
+preexec() { print -Pn "\e]0;%~ ❯ $1\a" }
+
 # starship prompt
 if command -v starship >/dev/null 2>&1; then
   export STARSHIP_CONFIG="$HOME/.config/starship.toml"
