@@ -7,6 +7,13 @@
         "bash": "~/.copilot/hooks/scripts/notify.sh",
         "timeoutSec": 10
       }
+    ],
+    "notification": [
+      {
+        "type": "command",
+        "bash": "~/.copilot/hooks/scripts/notify-event.sh",
+        "timeoutSec": 10
+      }
     ]
   }
 }
