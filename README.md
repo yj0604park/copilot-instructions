@@ -28,6 +28,9 @@ ln -sf $(pwd)/tmux.conf ~/.tmux.conf
 # 3. vim 설정
 ln -sf $(pwd)/vimrc ~/.vimrc
 
+# 4. zsh 설정
+ln -sf $(pwd)/zshrc ~/.zshrc
+
 # 4. Copilot CLI instructions
 mkdir -p ~/.copilot
 ln -sf $(pwd)/instructions.md ~/.copilot/copilot-instructions.md
@@ -44,6 +47,7 @@ ln -sf $(pwd)/hooks/scripts/notify.sh ~/.copilot/hooks/scripts/notify.sh
 # symlink 확인
 ls -la ~/.tmux.conf \
        ~/.vimrc \
+       ~/.zshrc \
        ~/.copilot/copilot-instructions.md \
        ~/.copilot/hooks/notification.json \
        ~/.copilot/hooks/scripts/notify.sh
