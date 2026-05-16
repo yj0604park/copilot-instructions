@@ -19,7 +19,10 @@ if [ -n "$SESSION_ID" ] && [ -f "$EVENTS_FILE" ]; then
   fi
 fi
 
-# Send notification to all tmux panes (SSH + tmux -> iTerm2)
-for tty in $(tmux list-panes -a -F '#{pane_tty}' 2>/dev/null); do
-  printf '\ePtmux;\e\e]9;Copilot: %s\a\e\\' "$SUMMARY" > "$tty" 2>/dev/null
-done
+# Send notification to current tmux pane only
+if [ -n "$TMUX_PANE" ]; then
+  tty=$(tmux display-message -p -t "$TMUX_PANE" '#{pane_tty}' 2>/dev/null)
+  if [ -n "$tty" ]; then
+    printf '\ePtmux;\e\e]9;Copilot: %s\a\e\\' "$SUMMARY" > "$tty" 2>/dev/null
+  fi
+fi
