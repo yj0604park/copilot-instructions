@@ -26,6 +26,7 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # zsh-autosuggestions
 for f in \
+  "$(brew --prefix 2>/dev/null)/share/zsh-autosuggestions/zsh-autosuggestions.zsh" \
   /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh \
   /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh; do
   [[ -f "$f" ]] && source "$f" && break
@@ -33,6 +34,7 @@ done
 
 # zsh-completions
 for d in \
+  "$(brew --prefix 2>/dev/null)/share/zsh-completions" \
   /usr/local/share/zsh-completions \
   /usr/share/zsh-completions \
   "$HOME/.zsh-completions/src"; do
