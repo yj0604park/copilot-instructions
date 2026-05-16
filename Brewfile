@@ -15,10 +15,9 @@ brew "zsh-completions"
 
 # GUI 앱
 cask "copilot-cli"
-cask "cursor"
 cask "displaylink"
 cask "hazeover"
-cask "hidden-bar"
+cask "hiddenbar"
 cask "iterm2"
 cask "itsycal"
 cask "karabiner-elements"
