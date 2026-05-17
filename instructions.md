@@ -16,13 +16,13 @@
 
 ### 서버 개요
 
-| 호스트명 | 모델 | OS | 역할 | Tailscale |
-|----------|------|----|------|-----------|
-| minitwo | Mac mini M1 | macOS | 인프라 (Traefik, Portal, Uptime Kuma, Grafana) | minitwo.tail591527.ts.net |
-| minione | Mac mini Intel | macOS | 앱 (Finance, File Organizer, Focalboard, Gitea) | minione.tail591527.ts.net |
-| raspberrypi | Raspberry Pi 5 | Linux (Debian) | Gallery, Crawler | raspberrypi.tail591527.ts.net |
-| yozit | Synology DS220+ | DSM (Linux) | NAS, Pi-hole, MinIO | yozit.tail591527.ts.net |
-| 개인컴 | AMD Ryzen + GTX 3070 | Windows 11 | 게임, GPU 작업 (WoL) | — |
+| 호스트명 | 모델 |
+|----------|------|
+| minitwo | Mac mini M1 |
+| minione | Mac mini Intel |
+| raspberrypi | Raspberry Pi 5 |
+| yozit | Synology DS220+ |
+| 개인컴 | AMD Ryzen + GTX 3070 |
 
 ## 환경
 - macOS (Apple Silicon / Intel) 및 Linux (Debian-family)
