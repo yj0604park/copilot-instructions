@@ -18,6 +18,7 @@
 
 | 호스트명 | 모델 |
 |----------|------|
+| bookone | MacBook Pro M4 |
 | minitwo | Mac mini M1 |
 | minione | Mac mini Intel |
 | raspberrypi | Raspberry Pi 5 |
