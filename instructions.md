@@ -12,7 +12,8 @@
 ## 머신 식별
 - 세션 시작 시 `hostname` 으로 현재 머신을 확인할 것
 - 모르겠으면 사용자에게 물어볼 것
-- 머신별 상세 환경은 `servers/` 폴더 참고
+- 이 파일은 symlink (`~/.copilot/copilot-instructions.md` → `~/Workspace/copilot-instructions/instructions.md`)
+- `servers/` 등 참조 파일은 실제 repo 경로(`~/Workspace/copilot-instructions/`)에서 읽을 것
 
 ### 서버 개요
 
