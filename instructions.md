@@ -14,6 +14,7 @@
 - 모르겠으면 사용자에게 물어볼 것
 - 이 파일은 symlink (`~/.copilot/copilot-instructions.md` → `~/Workspace/copilot-instructions/instructions.md`)
 - `servers/` 등 참조 파일은 실제 repo 경로(`~/Workspace/copilot-instructions/`)에서 읽을 것
+- `servers/{hostname}.md` 내용이 부실하면 현재 환경 정보를 수집해서 보충할 것
 
 ### 서버 개요
 
