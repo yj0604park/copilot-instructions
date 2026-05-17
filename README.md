@@ -10,6 +10,12 @@
 ├── Brewfile                   # macOS brew 패키지 + cask 앱 목록
 ├── check-symlinks.sh          # symlink 상태 점검
 ├── instructions.md            # Copilot CLI 커스텀 지시사항
+├── servers/                   # 머신별 상세 환경 문서
+│   ├── bookone.md
+│   ├── minitwo.md
+│   ├── minione.md
+│   ├── raspberrypi.md
+│   └── yozit.md
 ├── hooks/
 │   ├── notification.json      # agentStop hook 설정
 │   └── scripts/

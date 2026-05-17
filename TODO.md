@@ -1,6 +1,7 @@
 # TODO: 서버 환경 동기화 프로젝트
 
 ## 환경
+- MacBook Pro M4 (Bookone — 개발 메인)
 - Mac (Minitwo M1, Minione Intel — 개발/서비스)
 - Raspberry Pi 5 (Gallery, AI)
 - NAS Yozit (Pi-hole, MinIO)
