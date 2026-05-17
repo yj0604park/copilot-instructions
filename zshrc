@@ -88,9 +88,7 @@ fi
 # ─────────────────────────────────────────────
 # Aliases
 # ─────────────────────────────────────────────
-alias python3=python3.9
-alias scala212="$HOME/.sdkman/candidates/scala/2.12.8/bin/scala"
-alias scala211="$HOME/.sdkman/candidates/scala/2.11.12/bin/scala"
+# python3 → pyenv 또는 시스템 기본 사용 (3.12+)
 
 # ─────────────────────────────────────────────
 # Language toolchains
