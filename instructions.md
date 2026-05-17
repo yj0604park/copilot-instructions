@@ -8,10 +8,25 @@
 - 불필요한 설명, 이모지, 요약 반복 금지
 - 작업 결과는 핵심만 (예: "완료", "push 완료", "에러: ...")
 
+## 머신 식별
+- 세션 시작 시 `hostname` 으로 현재 머신을 확인할 것
+- 모르겠으면 사용자에게 물어볼 것
+- 머신별 상세 환경은 `servers/` 폴더 참고
+
+### 서버 개요
+
+| 호스트명 | 모델 | OS | 역할 | Tailscale |
+|----------|------|----|------|-----------|
+| minitwo | Mac mini M1 | macOS | 인프라 (Traefik, Portal, Uptime Kuma, Grafana) | minitwo.tail591527.ts.net |
+| minione | Mac mini Intel | macOS | 앱 (Finance, File Organizer, Focalboard, Gitea) | minione.tail591527.ts.net |
+| raspberrypi | Raspberry Pi 5 | Linux (Debian) | Gallery, Crawler | raspberrypi.tail591527.ts.net |
+| yozit | Synology DS220+ | DSM (Linux) | NAS, Pi-hole, MinIO | yozit.tail591527.ts.net |
+| 개인컴 | AMD Ryzen + GTX 3070 | Windows 11 | 게임, GPU 작업 (WoL) | — |
+
 ## 환경
 - macOS (Apple Silicon / Intel) 및 Linux (Debian-family)
 - Shell: Zsh + oh-my-zsh + Starship
-- Docker: OrbStack (Minitwo), docker-ce (Linux)
+- Docker: OrbStack (Mac), docker-ce (Linux)
 - 주요 언어: Python (3.12+), TypeScript, Java/Kotlin
 
 ## 작업 규칙
