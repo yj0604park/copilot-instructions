@@ -35,11 +35,15 @@ check vim        "brew install vim"
 
 echo
 echo "── zsh 플러그인 ──"
-BREW_PREFIX="$(brew --prefix 2>/dev/null)"
+BREW_PREFIX=""
+if command -v brew >/dev/null 2>&1; then
+  BREW_PREFIX="$(brew --prefix 2>/dev/null)"
+fi
 ZSH_AUTO_PATHS=(
-  "$BREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+  "${BREW_PREFIX:+$BREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh}"
   "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
   "$HOME/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
+  "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
 )
 found=""
 for p in "${ZSH_AUTO_PATHS[@]}"; do
@@ -52,9 +56,10 @@ else
 fi
 
 ZSH_COMP_PATHS=(
-  "$BREW_PREFIX/share/zsh-completions"
+  "${BREW_PREFIX:+$BREW_PREFIX/share/zsh-completions}"
   "/usr/share/zsh-completions"
   "$HOME/.zsh/zsh-completions"
+  "$HOME/.zsh-completions/src"
 )
 found=""
 for p in "${ZSH_COMP_PATHS[@]}"; do

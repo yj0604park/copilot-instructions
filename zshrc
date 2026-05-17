@@ -2,9 +2,15 @@
 # PATH
 # ─────────────────────────────────────────────
 export PATH="$HOME/.local/bin:$PATH"
-export PATH="/usr/local/opt/libpq/bin:$PATH"           # macOS Homebrew libpq
-export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"   # macOS Homebrew openjdk@17
-export JAVA_HOME="/opt/homebrew/opt/openjdk@17"
+
+# macOS 전용 경로 (Homebrew)
+if [[ "$OSTYPE" == darwin* ]]; then
+  [[ -d "/usr/local/opt/libpq/bin" ]] && export PATH="/usr/local/opt/libpq/bin:$PATH"
+  if [[ -d "/opt/homebrew/opt/openjdk@17" ]]; then
+    export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"
+    export JAVA_HOME="/opt/homebrew/opt/openjdk@17"
+  fi
+fi
 
 # ─────────────────────────────────────────────
 # oh-my-zsh (theme off — starship 사용)
@@ -88,6 +94,11 @@ fi
 # ─────────────────────────────────────────────
 # Aliases
 # ─────────────────────────────────────────────
+alias ll='ls -alh'
+alias la='ls -A'
+alias gs='git status'
+alias gd='git diff'
+alias gl='git log --oneline --graph --decorate -20'
 
 # ─────────────────────────────────────────────
 # Language toolchains
