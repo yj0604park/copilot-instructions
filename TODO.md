@@ -1,12 +1,5 @@
 # TODO: 서버 환경 동기화 프로젝트
 
-## 환경
-- MacBook Pro M4 (Bookone — 개발 메인)
-- Mac (Minitwo M1, Minione Intel — 개발/서비스)
-- Raspberry Pi 5 (Gallery, AI)
-- NAS Yozit (Pi-hole, MinIO)
-- 개인컴 (게이밍 PC)
-
 ## 완료
 - [x] Tailscale 메시 네트워크 — 모든 기기 연결됨
 - [x] 모니터링 대시보드 — Uptime Kuma + Grafana 운영 중
