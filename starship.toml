@@ -2,26 +2,26 @@
 # Nerd Font 권장 (https://www.nerdfonts.com/)
 
 format = """
-[╭─](bold green)$username[@](bold green)$hostname $directory$git_branch$git_status$git_state$docker_context$python$nodejs$rust$golang$java$kotlin$swift$package$cmd_duration$jobs
-[╰─](bold green)$character"""
+$username in $hostname in $directory$git_branch$git_status$git_state$docker_context$python$nodejs$rust$golang$java$kotlin$swift$package$cmd_duration$jobs
+$character"""
 
 add_newline = true
 command_timeout = 1000
 
 [character]
-success_symbol = "[➜](bold green)"
-error_symbol = "[✗](bold red)"
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
 
 [username]
 show_always = true
 style_user = "bold yellow"
 style_root = "bold red"
-format = "[$user]($style)"
+format = "[$user]($style) "
 
 [hostname]
 ssh_only = false
 style = "bold cyan"
-format = "[$hostname]($style)"
+format = "[🌐 $hostname]($style) "
 
 [directory]
 truncation_length = 4
