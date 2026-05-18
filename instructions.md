@@ -1,43 +1,28 @@
 # Copilot CLI Instructions
 
-## 언어
-- 한국어로 응답
+## 응답
+- 한국어, 반말, 짧고 캐주얼
+- 단답 선호, 설명/이모지/요약 반복 금지
+- 결과는 핵심만 ("완료", "push 완료", "에러: ...")
 
-## 응답 스타일
-- 반말 사용 (짧고 캐주얼하게)
-- 최대한 짧고 간결하게 응답 (단답 선호)
-- 불필요한 설명, 이모지, 요약 반복 금지
-- 작업 결과는 핵심만 (예: "완료", "push 완료", "에러: ...")
+## 환경 식별
+- 세션 시작 시 `hostname`으로 현재 머신 확인 (모르면 사용자에게 질문)
+- 현재 머신의 `servers/{hostname}.md`를 읽을 것
+- **현재 세션이 열린 머신**에 대한 설명이 없거나 부족하면, 환경 정보 수집해서 보충 후 커밋
 
-## 머신 식별
-- 세션 시작 시 `hostname` 으로 현재 머신을 확인할 것
-- 모르겠으면 사용자에게 물어볼 것
-- 이 파일은 symlink (`~/.copilot/copilot-instructions.md` → `~/Workspace/copilot-instructions/instructions.md`)
-- `servers/` 등 참조 파일은 실제 repo 경로(`~/Workspace/copilot-instructions/`)에서 읽을 것
-- `servers/{hostname}.md` 내용이 부실하면 현재 환경 정보를 수집해서 보충할 것
+## Repo 경로
+- 이 파일은 symlink: `~/.copilot/copilot-instructions.md` → repo의 `instructions.md`
+- 실제 repo: `dirname "$(readlink -f ~/.copilot/copilot-instructions.md)"`
+- 머신마다 다름, 경로 하드코딩 금지
 
-### 서버 개요
+## 안전/관례
+- `.env` 내용 출력 금지
+- 서버 작업 시 Tailscale hostname 사용 (IP X)
+- git commit: conventional commits (feat/fix/chore)
+- GitHub 접근 불가 시 `gh auth switch` 시도
 
-| 호스트명 | 모델 |
-|----------|------|
-| bookone | MacBook Pro M4 |
-| minitwo | Mac mini M1 |
-| minione | Mac mini Intel |
-| raspberrypi | Raspberry Pi 5 |
-| yozit | Synology DS220+ |
-| 개인컴 | AMD Ryzen + GTX 3070 |
-
-## 환경
-- macOS (Apple Silicon / Intel) 및 Linux (Debian-family)
-- Shell: Zsh + oh-my-zsh + Starship
-- Docker: OrbStack (Mac), docker-ce (Linux)
-- 주요 언어: Python (3.12+), TypeScript, Java/Kotlin
-
-## 작업 규칙
-- git commit은 conventional commits (feat/fix/chore)
-- 서버 작업 시 Tailscale hostname 사용 (IP 대신)
-- .env 파일 내용 출력 금지
-
-## 트러블슈팅
-- GitHub repo 접근 불가 시 `gh auth switch`로 다른 계정 테스트
-- SSH 원격 작업 시 PATH 설정 확인 (`/usr/local/bin:/opt/homebrew/bin`)
+## 참조 (필요할 때만)
+- repo 구조/설치/dotfile 워크플로우 → `README.md`
+- 머신별 환경/서비스/경로/GitHub 계정 → `servers/{hostname}.md`
+- Copilot CLI 기능/슬래시/단축키 → `copilot-cli-cheatsheet.md`
+- 진행중 작업 → `TODO.md`
