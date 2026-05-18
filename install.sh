@@ -160,7 +160,7 @@ clone_omz_plugin zsh-syntax-highlighting  https://github.com/zsh-users/zsh-synta
 log "symlink 생성 중..."
 
 mkdir -p "$HOME/.copilot/hooks/scripts"
-mkdir -p "$HOME/.config"
+mkdir -p "$HOME/.config/atuin"
 
 link() {
   local src="$1" dst="$2"
@@ -176,6 +176,7 @@ link() {
   ok "$dst → $src"
 }
 
+link "$REPO_DIR/atuin.toml"                       "$HOME/.config/atuin/config.toml"
 link "$REPO_DIR/tmux.conf"                       "$HOME/.tmux.conf"
 link "$REPO_DIR/vimrc"                           "$HOME/.vimrc"
 link "$REPO_DIR/zshrc"                           "$HOME/.zshrc"

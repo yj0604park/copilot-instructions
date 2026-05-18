@@ -9,6 +9,7 @@ FILES=(
   "$COPILOT_HOME/hooks/notification.json"
   "$COPILOT_HOME/hooks/scripts/notify.sh"
   "$COPILOT_HOME/hooks/scripts/notify-event.sh"
+  "$HOME/.config/atuin/config.toml"
   "$HOME/.tmux.conf"
   "$HOME/.vimrc"
   "$HOME/.zshrc"
