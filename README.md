@@ -95,8 +95,15 @@ git pull
 # 새 hook이나 dotfile이 추가됐으면 install.sh 다시 실행
 ```
 
-## 참고
+## 수정 후 적용 방법
 
-- tmux 설정 즉시 적용: `tmux source ~/.tmux.conf`
-- starship 설정 즉시 적용: 새 프롬프트가 표시되는 순간 자동 반영
-- zsh 설정 즉시 적용: `source ~/.zshrc`
+| 파일 | 적용 방법 |
+|---|---|
+| `tmux.conf` | `tmux source ~/.tmux.conf` |
+| `starship.toml` | 다음 프롬프트부터 자동 반영 |
+| `zshrc` | `source ~/.zshrc` (또는 `exec zsh`) |
+| `vimrc` | 다음 vim 실행부터 자동 |
+| `instructions.md` | **다음 Copilot CLI 세션부터 적용** (현재 세션엔 영향 없음) |
+| `hooks/notification.json`, `hooks/scripts/*.sh` | **Copilot CLI 재시작 필요** (`/exit` 후 재실행) |
+| `Brewfile` | `brew bundle --file=~/copilot-instructions/Brewfile` |
+| 새 파일 추가 (symlink 대상) | `./install.sh` 재실행 |

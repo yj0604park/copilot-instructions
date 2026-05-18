@@ -23,7 +23,24 @@
 ## 주요 작업
 - Instagram Crawler
 - 이미지 사람 감지 (현재: Groq API → YOLO 로컬 전환 예정)
+- Copilot CLI 워크스페이스 (`~/.openclaw/workspace/`) — 에이전트 페르소나/메모리
+
+## 프로젝트 경로
+- `~/.openclaw/workspace/` — Copilot 에이전트 작업 디렉토리
+- `~/.openclaw/workspace/copilot-instructions/` — dotfiles/instructions repo
+- `~/.openclaw/workspace/projects/` — Gallery/Instagram 등 서브 프로젝트
+
+## GitHub 계정
+- 활성: `yj0604park` (기본)
+- 추가 로그인: `diehardclaw99-creator` (이 워크스페이스 repo 소유 — `clo-automations`)
+- repo 접근 불가 시 `gh auth switch`
+
+## 도메인 패턴
+- `*.paryoja.com` — 공개 서비스 (이 머신에선 `gallery.paryoja.com`만)
+- `*.tail591527.ts.net` — Tailscale 내부 (`raspberrypi.tail591527.ts.net`)
 
 ## 운영 메모
 - `systemctl status gallery` 로 Flask 상태 확인
 - Docker 도입 시 `docker-ce` apt 설치 필요
+- SSH 원격 작업 시 PATH: `/usr/local/bin:/usr/bin` (기본으로 충분)
+
