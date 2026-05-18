@@ -108,6 +108,20 @@ else
 fi
 
 # ─────────────────────────────────────────────
+# 4-1b) atuin (apt에 없으면 공식 installer)
+# ─────────────────────────────────────────────
+if ! have atuin; then
+  log "atuin 설치 중..."
+  mkdir -p "$HOME/.local/bin"
+  curl -sSfL https://setup.atuin.sh | \
+    env ATUIN_NO_MODIFY_PATH=1 ATUIN_INSTALL_DIR="$HOME/.local/bin" \
+    sh -s -- --non-interactive
+  ok "atuin 설치 (~/.local/bin/)"
+else
+  ok "atuin 이미 설치됨"
+fi
+
+# ─────────────────────────────────────────────
 # 4-2) oh-my-zsh (공식 installer, unattended, zshrc 보존)
 # ─────────────────────────────────────────────
 if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
