@@ -23,12 +23,15 @@ brew "ripgrep"
 
 # GUI 앱
 cask "copilot-cli"
+cask "displaylink"
 cask "hazeover"
 cask "hiddenbar"
 cask "iterm2"
 cask "itsycal"
 cask "karabiner-elements"
+cask "obsidian"
 cask "slack"
+cask "tailscale"
 cask "visual-studio-code"
 cask "vnc-viewer"
 
