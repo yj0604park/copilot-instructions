@@ -41,6 +41,8 @@
 | yozit | nas-agent |
 
 - 확인 방법: `curl -s https://memo.paryoja.com/inbox/{agent_name}?status=pending`
+- 세션 시작 시 자신을 등록: `curl -X POST https://memo.paryoja.com/agents -H "Content-Type: application/json" -d '{"name":"{agent_name}","hostname":"{hostname}","description":"역할 설명","capabilities":["skill1","skill2"]}'`
+- 다른 agent 확인: `curl -s https://memo.paryoja.com/agents`
 - 작업 시작 시: PATCH `/inbox/{id}` → `{"status": "in_progress"}`
 - 작업 완료 시: PATCH `/inbox/{id}` → `{"status": "done", "result": "결과 요약"}`
 - 다른 agent에게 작업 요청: POST `/inbox` → `{"from_agent":"자신","to_agent":"대상","type":"task","content":"내용"}`
