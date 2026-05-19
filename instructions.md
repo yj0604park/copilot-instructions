@@ -26,3 +26,21 @@
 - 머신별 환경/서비스/경로/GitHub 계정 → `servers/{hostname}.md`
 - Copilot CLI 기능/슬래시/단축키 → `copilot-cli-cheatsheet.md`
 - 진행중 작업 → `TODO.md`
+
+## Agent Inbox
+- **API**: `https://memo.paryoja.com/inbox`
+- 세션 시작 시 자신의 inbox를 확인하고, pending 메시지가 있으면 사용자에게 알려줄 것
+- Agent 이름 매핑:
+
+| 호스트명 | agent_name |
+|----------|-----------|
+| bookone | dev-agent |
+| minitwo | infra-agent |
+| minione | app-agent |
+| raspberrypi | rpi-agent |
+| yozit | nas-agent |
+
+- 확인 방법: `curl -s https://memo.paryoja.com/inbox/{agent_name}?status=pending`
+- 작업 시작 시: PATCH `/inbox/{id}` → `{"status": "in_progress"}`
+- 작업 완료 시: PATCH `/inbox/{id}` → `{"status": "done", "result": "결과 요약"}`
+- 다른 agent에게 작업 요청: POST `/inbox` → `{"from_agent":"자신","to_agent":"대상","type":"task","content":"내용"}`
