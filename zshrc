@@ -94,11 +94,26 @@ fi
 # ─────────────────────────────────────────────
 # Aliases
 # ─────────────────────────────────────────────
-alias ll='ls -alh'
-alias la='ls -A'
 alias gs='git status'
 alias gd='git diff'
 alias gl='git log --oneline --graph --decorate -20'
+alias lg='lazygit'
+
+# 모던 CLI 대체
+if command -v eza >/dev/null 2>&1; then
+  alias ls='eza --icons'
+  alias ll='eza -alh --icons --git'
+  alias la='eza -A --icons'
+  alias tree='eza --tree --icons'
+else
+  alias ll='ls -alh'
+  alias la='ls -A'
+fi
+
+if command -v bat >/dev/null 2>&1; then
+  alias cat='bat --paging=never'
+  export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+fi
 
 # ─────────────────────────────────────────────
 # Language toolchains

@@ -13,6 +13,14 @@ brew "zsh"
 brew "zsh-autosuggestions"
 brew "zsh-completions"
 
+# 모던 CLI 대체 도구
+brew "bat"
+brew "btop"
+brew "eza"
+brew "fd"
+brew "lazygit"
+brew "ripgrep"
+
 # GUI 앱
 cask "copilot-cli"
 cask "displaylink"
