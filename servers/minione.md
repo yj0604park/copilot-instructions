@@ -8,8 +8,7 @@
 - **Tailscale**: minione.tail591527.ts.net
 
 ## Docker
-- **런타임**: OrbStack
-- **주의**: SSH non-login shell에서 `export PATH=$PATH:/usr/local/bin:/opt/homebrew/bin:~/.orbstack/bin` 필요
+- **런타임**: Docker Desktop
 
 ## 서비스 (Docker)
 | 서비스 | 포트 | 도메인 |
