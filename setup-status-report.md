@@ -7,6 +7,7 @@
 
 | 섹션 | 값 | 임계값 (warn / crit) |
 |------|------|-----------|
+| **copilot-instructions** | `<short-hash>@<branch>` (+ dirty / ahead / behind) | — |
 | Disk (`/`) | 사용률 % | 80 / 90 |
 | Memory | 사용률 % | 85 / 95 |
 | Load avg | load1 / ncpu | 1.0× / 2.0× |
@@ -16,6 +17,17 @@
 | 주요 서비스 | 머신별 서비스 active 여부 | — |
 
 🟢 / 🟠 / 🔴 임계값 태그. 한 메시지로 묶어 발송.
+
+**copilot-instructions 해시는 반드시 포함** — 어느 머신이 어떤 버전의 instructions으로 도는지 한눈에. 오래된 hash로 도는 머신을 즉시 발견하려는 목적.
+구현 패턴 (`scripts/system-health.py`의 `copilot_instructions_info()` 참고):
+```python
+link = Path.home() / ".copilot" / "copilot-instructions.md"
+repo = Path(os.path.realpath(link)).parent
+hash = git("-C", repo, "rev-parse", "--short", "HEAD")
+branch = git("-C", repo, "rev-parse", "--abbrev-ref", "HEAD")
+dirty = bool(git("-C", repo, "status", "--porcelain"))
+behind, ahead = git("-C", repo, "rev-list", "--left-right", "--count", "@{u}...HEAD").split()
+```
 
 ## 머신별 OS 차이
 
