@@ -43,4 +43,5 @@
 - `systemctl status gallery` 로 Flask 상태 확인
 - Docker 도입 시 `docker-ce` apt 설치 필요
 - SSH 원격 작업 시 PATH: `/usr/local/bin:/usr/bin` (기본으로 충분)
+- status report: cron `0 23`, `scripts/system-health.py` → Slack DM `C0AFD7AQ4QK` (이미 셋업)
 
