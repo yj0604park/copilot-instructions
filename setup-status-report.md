@@ -67,6 +67,44 @@ HEALTH_CHANNEL=C0AFD7AQ4QK
 
 > 같은 bot 토큰을 여러 머신에서 공유. 일반 가정 셋업에선 OK. 토큰 분리는 추후.
 
+## Secret 전달 (중요)
+
+**원칙: agent 컨텍스트에 토큰을 노출하지 말 것**
+- 토큰을 채팅창에 paste하면 conversation history / session store에 평문이 남음
+- agent는 *경로/명령*만 다루고, *값*은 사용자가 직접 옮긴다
+- 옮긴 직후 토큰이 출력된 터미널 스크롤백/`/tmp` 확인
+
+### 권장 흐름 (SSH 가능할 때)
+
+raspberrypi에 SSH 가능한 머신은 한 줄로:
+```bash
+ssh raspberrypi 'cat ~/.config/system-health/env' \
+  | (umask 077 && mkdir -p ~/.config/system-health \
+     && cat > ~/.config/system-health/env)
+chmod 600 ~/.config/system-health/env
+```
+
+또는 raspberrypi 안에서 push:
+```bash
+scp ~/.config/system-health/env <new-host>:~/.config/system-health/env
+ssh <new-host> 'chmod 600 ~/.config/system-health/env'
+```
+
+SSH key가 없으면 먼저 `ssh-copy-id` 또는 Tailscale SSH 활성화.
+
+### Fallback (SSH 안 됨)
+
+- raspberrypi에서 `cat` 으로 토큰 확인
+- 새 머신에서 직접 `nano ~/.config/system-health/env` 입력 (절대 agent에게 paste 금지)
+- 끝나면 raspberrypi 터미널 `clear` + scrollback 비우기
+
+### agent의 역할
+
+- 토큰 부재 감지 (`test -s ~/.config/system-health/env`)
+- 위 명령을 안내만 하고 사용자가 실행
+- 셋업 후엔 `python3 -c "import os; print(bool(open(...).read()))"` 정도로 *존재만* 확인 (값 출력 금지)
+- 토큰 회전 필요 시도 동일 흐름
+
 ## 셋업 단계 (체크리스트)
 
 새 머신에서 copilot이 첫 세션에 다음을 수행:
@@ -79,11 +117,10 @@ HEALTH_CHANNEL=C0AFD7AQ4QK
 3. **레퍼런스 복사**
    - raspberrypi의 `scripts/system-health.py`를 새 머신 환경에 맞게 포팅
    - 또는 단일 portable script 작성 (`scripts/system-health-portable.py` — 향후 작업)
-4. **토큰 파일 생성**
+4. **토큰 파일 생성** ([[Secret 전달]] 섹션 참고 — agent에게 paste 금지)
    ```bash
-   mkdir -p ~/.config/system-health
-   touch ~/.config/system-health/env && chmod 600 ~/.config/system-health/env
-   # 사용자에게 SLACK_BOT_TOKEN 받아서 적음 (또는 raspberrypi에서 SCP)
+   mkdir -p ~/.config/system-health && chmod 700 ~/.config/system-health
+   # raspberrypi에서 SCP 또는 직접 nano로 입력
    ```
 5. **수동 테스트**
    ```bash
