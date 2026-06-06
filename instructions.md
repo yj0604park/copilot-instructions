@@ -1,6 +1,6 @@
 # Copilot CLI Instructions
 
-> Revision: 4
+> Revision: 5
 
 ## 응답
 - 한국어, 반말, 짧고 캐주얼
@@ -9,6 +9,8 @@
 
 ## 환경 식별
 - 세션 시작 시 `hostname`으로 현재 머신 확인 (모르면 사용자에게 질문)
+- hostname 확인 직후 `scripts/register-memo-agent.sh`로 현재 Copilot agent를 memo-service에 등록할 것
+- 등록 실패는 작업을 막지 말고 짧게만 알릴 것
 - 현재 머신의 `servers/{hostname}.md`를 읽을 것
 - **현재 세션이 열린 머신**에 대한 설명이 없거나 부족하면, 환경 정보 수집해서 보충 후 커밋
 
@@ -32,6 +34,7 @@
 
 ## Agent Inbox
 - **API**: `https://memo.paryoja.com/inbox`
+- 세션 시작 시 자신을 등록: `scripts/register-memo-agent.sh`
 - 세션 시작 시 자신의 inbox를 확인하고, pending 메시지가 있으면 사용자에게 알려줄 것
 - Agent 이름 매핑:
 
@@ -44,7 +47,6 @@
 | yozit | nas-agent |
 
 - 확인 방법: `curl -s https://memo.paryoja.com/inbox/{agent_name}?status=pending`
-- 세션 시작 시 자신을 등록: `curl -X POST https://memo.paryoja.com/agents -H "Content-Type: application/json" -d '{"name":"{agent_name}","hostname":"{hostname}","description":"역할 설명","capabilities":["skill1","skill2"]}'`
 - 다른 agent 확인: `curl -s https://memo.paryoja.com/agents`
 - 작업 시작 시: PATCH `/inbox/{id}` → `{"status": "in_progress"}`
 - 작업 완료 시: PATCH `/inbox/{id}` → `{"status": "done", "result": "결과 요약"}`
