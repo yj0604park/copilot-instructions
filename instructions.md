@@ -1,6 +1,6 @@
 # Copilot CLI Instructions
 
-> Revision: 5
+> Revision: 6
 
 ## 응답
 - 한국어, 반말, 짧고 캐주얼
@@ -35,10 +35,11 @@
 ## Agent Inbox
 - **API**: `https://memo.paryoja.com/inbox`
 - 세션 시작 시 자신을 등록: `scripts/register-memo-agent.sh`
-- 세션 시작 시 자신의 inbox를 확인하고, pending 메시지가 있으면 사용자에게 알려줄 것
-- Agent 이름 매핑:
+- 등록 스크립트는 세션별 `MEMO_AGENT_NAME`과 host/node용 `MEMO_NODE_AGENT_NAME`을 `~/.local/state/copilot/memo-agent.env`에 저장한다
+- 세션 시작 시 자신의 inbox와 node inbox를 둘 다 확인하고, pending 메시지가 있으면 사용자에게 알려줄 것
+- Node inbox 이름 매핑:
 
-| 호스트명 | agent_name |
+| 호스트명 | node_agent_name |
 |----------|-----------|
 | bookone | dev-agent |
 | minitwo | infra-agent |
@@ -46,11 +47,12 @@
 | raspberrypi | rpi-agent |
 | yozit | nas-agent |
 
-- 확인 방법: `curl -s https://memo.paryoja.com/inbox/{agent_name}?status=pending`
+- 확인 방법: `source ~/.local/state/copilot/memo-agent.env && curl -s "https://memo.paryoja.com/inbox/$MEMO_AGENT_NAME?status=pending" && curl -s "https://memo.paryoja.com/inbox/$MEMO_NODE_AGENT_NAME?status=pending"`
 - 다른 agent 확인: `curl -s https://memo.paryoja.com/agents`
-- 작업 시작 시: PATCH `/inbox/{id}` → `{"status": "in_progress"}`
+- node inbox 작업 시작 시: POST `/inbox/{id}/claim` → `{"agent_name":"$MEMO_AGENT_NAME","expected_to_agent":"$MEMO_NODE_AGENT_NAME"}`. 409면 다른 agent가 먼저 가져간 것
+- 직접 할당 작업 시작 시: POST `/inbox/{id}/claim` → `{"agent_name":"$MEMO_AGENT_NAME","expected_to_agent":"$MEMO_AGENT_NAME"}`
 - 작업 완료 시: PATCH `/inbox/{id}` → `{"status": "done", "result": "결과 요약"}`
-- 다른 agent에게 작업 요청: POST `/inbox` → `{"from_agent":"자신","to_agent":"대상","type":"task","content":"내용"}`
+- 다른 node에게 작업 요청: POST `/inbox` → `{"from_agent":"$MEMO_AGENT_NAME","to_agent":"대상_node_agent_name","type":"task","content":"내용"}`
 
 ## Daily Status Report (머신별)
 - 모든 머신은 매일 23:00 (로컬) 자기 헬스 리포트를 Slack DM `C0AFD7AQ4QK`에 보낸다
