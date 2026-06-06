@@ -30,3 +30,10 @@
 - `yj0604park` (finance-main, infra)
 - `paryojavive` (file-organizer — private repo)
 - repo 접근 불가 시 `gh auth switch` 시도
+
+## 운영 메모
+- status report: LaunchAgent `~/Library/LaunchAgents/com.paryoja.system-health.plist`, 매일 23:00, `scripts/system-health-macos.py` → Slack DM `C0AFD7AQ4QK`
+  - 토큰: `~/.config/system-health/env` (chmod 600)
+  - 로그: `/tmp/system-health.log`
+  - 수동 테스트: `python3 scripts/system-health-macos.py --dry-run`
+  - macOS는 cron에 Full Disk Access 권한 이슈가 있어 launchd 사용
