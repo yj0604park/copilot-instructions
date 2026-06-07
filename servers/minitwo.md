@@ -29,3 +29,6 @@
 ## 프로젝트 경로
 - `~/homelab/` — 인프라 monorepo (yj0604park/infra)
 - `~/workspace2/home-dashboard/` — 대시보드 서비스
+
+## 운영 메모
+- memo-service health report: cron `0 23`, `~/workspace2/memo-service/scripts/system-health.py` → Slack DM
