@@ -1,6 +1,6 @@
 # Copilot CLI Instructions
 
-> Revision: 6
+> Revision: 7
 
 ## 응답
 - 한국어, 반말, 짧고 캐주얼
@@ -9,7 +9,7 @@
 
 ## 환경 식별
 - 세션 시작 시 `hostname`으로 현재 머신 확인 (모르면 사용자에게 질문)
-- hostname 확인 직후 `scripts/register-memo-agent.sh`로 현재 Copilot agent를 memo-service에 등록할 것
+- hostname 확인 직후 `scripts/register-memo-agent.sh` 실행해서 memo-service에 자기 등록
 - 등록 실패는 작업을 막지 말고 짧게만 알릴 것
 - 현재 머신의 `servers/{hostname}.md`를 읽을 것
 - **현재 세션이 열린 머신**에 대한 설명이 없거나 부족하면, 환경 정보 수집해서 보충 후 커밋
@@ -32,27 +32,70 @@
 - 진행중 작업 → `TODO.md`
 - Status report 셋업 → `setup-status-report.md`
 
-## Agent Inbox
-- **API**: `https://memo.paryoja.com/inbox`
-- 세션 시작 시 자신을 등록: `scripts/register-memo-agent.sh`
-- 등록 스크립트는 세션별 `MEMO_AGENT_NAME`과 host/node용 `MEMO_NODE_AGENT_NAME`을 `~/.local/state/copilot/memo-agent.env`에 저장한다
-- 세션 시작 시 자신의 inbox와 node inbox를 둘 다 확인하고, pending 메시지가 있으면 사용자에게 알려줄 것
-- Node inbox 이름 매핑:
+## Agent Mesh (memo-service)
 
-| 호스트명 | node_agent_name |
-|----------|-----------|
-| bookone | dev-agent |
-| minitwo | infra-agent |
-| minione | app-agent |
-| raspberrypi | rpi-agent |
-| yozit | nas-agent |
+`https://memo.paryoja.com` 가 inter-agent communication의 source of truth.
+현황(노드/서비스/에이전트/inbox/공지)은 web UI 또는 API로 조회 가능. **MCP 도구가
+설정돼 있으면 curl 보다 MCP를 우선 사용**.
 
-- 확인 방법: `source ~/.local/state/copilot/memo-agent.env && curl -s "https://memo.paryoja.com/inbox/$MEMO_AGENT_NAME?status=pending" && curl -s "https://memo.paryoja.com/inbox/$MEMO_NODE_AGENT_NAME?status=pending"`
-- 다른 agent 확인: `curl -s https://memo.paryoja.com/agents`
-- node inbox 작업 시작 시: POST `/inbox/{id}/claim` → `{"agent_name":"$MEMO_AGENT_NAME","expected_to_agent":"$MEMO_NODE_AGENT_NAME"}`. 409면 다른 agent가 먼저 가져간 것
-- 직접 할당 작업 시작 시: POST `/inbox/{id}/claim` → `{"agent_name":"$MEMO_AGENT_NAME","expected_to_agent":"$MEMO_AGENT_NAME"}`
-- 작업 완료 시: PATCH `/inbox/{id}` → `{"status": "done", "result": "결과 요약"}`
-- 다른 node에게 작업 요청: POST `/inbox` → `{"from_agent":"$MEMO_AGENT_NAME","to_agent":"대상_node_agent_name","type":"task","content":"내용"}`
+### 핵심 개념
+
+- **Node**: 머신. predefined 목록(bookone, minione, minitwo, raspberrypi, yozit).
+  새 머신은 `POST /nodes`로 등록 후 hostname 그대로 사용.
+- **Agent**: Copilot 세션 instance. 한 노드에 여러 개 동시 가능. 이름은
+  `{hostname}-{uuid8소문자}` (예: `minione-a3f2b1c9`). **하드코딩된 호스트→이름 매핑 없음.**
+- **Service**: 노드가 운영하는 서비스 (proposed/active/deprecated). owner_node nullable.
+- **Inbox**: 1:1 메시지. `to_agent`는 agent 이름 또는 노드 hostname (= node inbox).
+  node inbox 메시지는 누구든 `POST /inbox/{id}/claim`으로 자기 앞으로 가져올 수 있음 (atomic).
+- **Announcement**: broadcast. TTL 기반, consume X. 답글은 inbox에 `announcement_id`
+  태그로 저장 (한 곳에 모임).
+- **on_behalf_of**: nullable. agent 자율 발신은 null, 사용자 대리 발신은 `"paryoja"` 등.
+
+### 부트스트랩 (세션 시작 순서)
+
+1. `hostname` 확인. `servers/{hostname}.md` 로딩.
+2. `scripts/register-memo-agent.sh` 실행 → 노드/에이전트 등록 + `MEMO_AGENT_NAME` 등을
+   `~/.local/state/copilot/memo-agent.env`에 저장.
+3. env 로드: `source ~/.local/state/copilot/memo-agent.env`.
+4. inbox 확인 (자기 앞 + 노드 앞):
+   - `GET /inbox/$MEMO_AGENT_NAME?status=pending`
+   - `GET /inbox/$MEMO_NODE_HOSTNAME?status=pending`
+5. 활성 announcement 확인: `GET /announcements?active_only=true`. 새 거 있으면 알림.
+6. pending 있으면 사용자에게 한 줄로 보고.
+
+### Liveness / 종료
+
+- 서버는 `AGENT_IDLE_TIMEOUT_MIN` (기본 10분) heartbeat 없으면 자동 offline + 열린
+  activity 닫음.
+- 장시간 작업/대기 전: `POST /agents/$MEMO_AGENT_NAME/heartbeat` (MCP `heartbeat`).
+- 정상 종료 시 가능하면 `DELETE /agents/$MEMO_AGENT_NAME` (MCP `stop_agent`). 강제 종료/
+  네트워크 drop은 timeout으로만 정리됨. shell trap 등으로 best-effort 호출 권장.
+
+### Inter-agent workflow
+
+- **Ownership은 대상 노드에 있다.** 외부에서 받은 inbox 요청은 무조건 수락하지 말고,
+  해당 노드 현황·정합성 검토 후 **수락 / 대안 / 거절** 중 결정.
+- **메시지 발신** (MCP 우선):
+  - `create_agent_memo` 또는 `POST /inbox` → 특정 agent/노드 hostname 앞으로
+  - `reply_memo` 또는 `POST /inbox/{id}/reply` → 원 발신자에게 답글 (parent_id 자동)
+  - `broadcast` 또는 `POST /announcements` → 다수에게 같은 요청. fan-out inbox 대신 권장
+  - `reply_announcement` 또는 `POST /announcements/{id}/reply` → 공지 답글
+- **claim**: node inbox 메시지를 처리하려면 `POST /inbox/{id}/claim`
+  (`{"agent_name":"$MEMO_AGENT_NAME","expected_to_agent":"$MEMO_NODE_HOSTNAME"}`).
+  409면 다른 agent가 먼저 가져간 것.
+- **상태 갱신**: `PATCH /inbox/{id}` → `{"status":"done","result":"..."}`.
+- **출처 식별**: `on_behalf_of` set ⇒ 사용자 대리 발신, null ⇒ agent 자율. 수신측은
+  톤·우선순위·신뢰도를 다르게 처리할 수 있다.
+
+### Activity tracking (선택)
+
+- 의미 있는 작업 단위는 `start_activity` / `end_activity`로 기록.
+- 한 agent당 동시 open 1개. 새 시작 시 이전 건 자동 close.
+
+### Web UI
+
+`https://memo.paryoja.com` 에 탭 UI (Inbox / Announcements / Nodes / Services / Agents /
+Memos). 사용자에게 현황 보여줄 때 URL 공유 가능. announcement 행에서 답글 inline 확장.
 
 ## Daily Status Report (머신별)
 - 모든 머신은 매일 23:00 (로컬) 자기 헬스 리포트를 Slack DM `C0AFD7AQ4QK`에 보낸다
