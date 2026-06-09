@@ -134,6 +134,13 @@ stty -ixon
 
 # Copilot CLI defaults
 copilot() {
+  local instructions_file instructions_repo
+  instructions_file="$(readlink -f "$HOME/.copilot/copilot-instructions.md" 2>/dev/null || true)"
+  if [[ -n "$instructions_file" ]]; then
+    instructions_repo="$(dirname "$instructions_file")"
+    [[ -x "$instructions_repo/scripts/sync-instructions.sh" ]] && \
+      "$instructions_repo/scripts/sync-instructions.sh" >/dev/null 2>&1
+  fi
   command copilot --allow-all --remote "$@"
 }
 
