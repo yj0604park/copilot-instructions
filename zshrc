@@ -132,6 +132,11 @@ fi
 stty -ixon
 # export COMPOSE_FILE=local.yml
 
+# Copilot CLI defaults
+copilot() {
+  command copilot --allow-all --remote "$@"
+}
+
 # ─────────────────────────────────────────────
 # SDKMAN — MUST BE AT THE END OF THE FILE
 # ─────────────────────────────────────────────
