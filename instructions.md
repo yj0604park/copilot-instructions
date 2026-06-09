@@ -1,6 +1,6 @@
 # Copilot CLI Instructions
 
-> Revision: 8
+> Revision: 9
 
 ## 응답
 - 한국어, 반말, 짧고 캐주얼
@@ -54,15 +54,18 @@
 ### Bootstrap (세션 시작 순서)
 
 1. `hostname` 확인. `servers/{hostname}.md` 로딩.
-2. `scripts/register-memo-agent.sh` 실행 → 노드/에이전트 등록 + 현재
-   copilot-instructions repo의 git HEAD SHA(`instructions_sha`) 자동 보고.
-   `MEMO_AGENT_NAME` 등을 `~/.local/state/copilot/memo-agent.env`에 저장.
-3. env 로드: `source ~/.local/state/copilot/memo-agent.env`.
-4. inbox 확인 (자기 앞 + 노드 앞):
+2. `source "$(scripts/register-memo-agent.sh)"` 실행 →
+   - 노드/에이전트 등록 (idempotent)
+   - 현재 copilot-instructions repo의 git HEAD SHA(`instructions_sha`) 자동 보고
+   - 세션별 env 파일 `~/.local/state/copilot/memo-agent-{instance}.env` 생성/갱신
+   - 스크립트 stdout은 그 파일 path만 출력 → 호출자가 source로 환경 로드
+   - 동일 호스트에 동시 세션 여러 개면 각자 다른 `MEMO_AGENT_NAME` 받음 (tty+PPID 기반).
+     명시 지정은 `COPILOT_AGENT_INSTANCE` env로.
+3. inbox 확인 (자기 앞 + 노드 앞):
    - `GET /inbox/$MEMO_AGENT_NAME?status=pending`
    - `GET /inbox/$MEMO_NODE_HOSTNAME?status=pending`
-5. 활성 announcement 확인: `GET /announcements?active_only=true`. 새 거 있으면 알림.
-6. pending 있으면 사용자에게 한 줄로 보고.
+4. 활성 announcement 확인: `GET /announcements?active_only=true`. 새 거 있으면 알림.
+5. pending 있으면 사용자에게 한 줄로 보고.
 
 이상 동작이 발생하면 web UI의 Agents 탭에서 각 에이전트의 `instr`(앞 7자) 컬럼을 보고
 어떤 instructions revision으로 돌고 있었는지 역추적 가능.
