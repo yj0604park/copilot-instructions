@@ -39,10 +39,24 @@ MEMO_NODE_HOSTNAME=${host_lower}
 EOF2
 chmod 600 "$state_file"
 
-payload="$(printf '{"name":"%s","hostname":"%s","node_hostname":"%s","description":"GitHub Copilot CLI session on %s","capabilities":["coding","git","terminal"]}' \
-  "$agent_name" "$host_lower" "$host_lower" "$host_lower")"
+# Resolve copilot-instructions repo HEAD for diagnostics
+instructions_sha=""
+if [[ -L "$HOME/.copilot/copilot-instructions.md" ]]; then
+  inst_repo="$(dirname "$(readlink -f "$HOME/.copilot/copilot-instructions.md")")"
+  if [[ -d "$inst_repo/.git" ]]; then
+    instructions_sha="$(git -C "$inst_repo" rev-parse HEAD 2>/dev/null || true)"
+  fi
+fi
+
+if [[ -n "$instructions_sha" ]]; then
+  payload="$(printf '{"name":"%s","hostname":"%s","node_hostname":"%s","description":"GitHub Copilot CLI session on %s","capabilities":["coding","git","terminal"],"instructions_sha":"%s"}' \
+    "$agent_name" "$host_lower" "$host_lower" "$host_lower" "$instructions_sha")"
+else
+  payload="$(printf '{"name":"%s","hostname":"%s","node_hostname":"%s","description":"GitHub Copilot CLI session on %s","capabilities":["coding","git","terminal"]}' \
+    "$agent_name" "$host_lower" "$host_lower" "$host_lower")"
+fi
 
 curl -fsS -m 3 -H "Content-Type: application/json" -X POST \
   --data "$payload" "${memo_url%/}/agents" >/dev/null
 
-printf 'memo agent registered: %s (node: %s)\n' "$agent_name" "$host_lower"
+printf 'memo agent registered: %s (node: %s, instr: %s)\n' "$agent_name" "$host_lower" "${instructions_sha:0:7}"

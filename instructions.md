@@ -1,6 +1,6 @@
 # Copilot CLI Instructions
 
-> Revision: 7
+> Revision: 8
 
 ## 응답
 - 한국어, 반말, 짧고 캐주얼
@@ -51,17 +51,21 @@
   태그로 저장 (한 곳에 모임).
 - **on_behalf_of**: nullable. agent 자율 발신은 null, 사용자 대리 발신은 `"paryoja"` 등.
 
-### 부트스트랩 (세션 시작 순서)
+### Bootstrap (세션 시작 순서)
 
 1. `hostname` 확인. `servers/{hostname}.md` 로딩.
-2. `scripts/register-memo-agent.sh` 실행 → 노드/에이전트 등록 + `MEMO_AGENT_NAME` 등을
-   `~/.local/state/copilot/memo-agent.env`에 저장.
+2. `scripts/register-memo-agent.sh` 실행 → 노드/에이전트 등록 + 현재
+   copilot-instructions repo의 git HEAD SHA(`instructions_sha`) 자동 보고.
+   `MEMO_AGENT_NAME` 등을 `~/.local/state/copilot/memo-agent.env`에 저장.
 3. env 로드: `source ~/.local/state/copilot/memo-agent.env`.
 4. inbox 확인 (자기 앞 + 노드 앞):
    - `GET /inbox/$MEMO_AGENT_NAME?status=pending`
    - `GET /inbox/$MEMO_NODE_HOSTNAME?status=pending`
 5. 활성 announcement 확인: `GET /announcements?active_only=true`. 새 거 있으면 알림.
 6. pending 있으면 사용자에게 한 줄로 보고.
+
+이상 동작이 발생하면 web UI의 Agents 탭에서 각 에이전트의 `instr`(앞 7자) 컬럼을 보고
+어떤 instructions revision으로 돌고 있었는지 역추적 가능.
 
 ### Liveness / 종료
 
