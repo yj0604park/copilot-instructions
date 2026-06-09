@@ -1,6 +1,6 @@
 # Copilot CLI Instructions
 
-> Revision: 9
+> Revision: 10
 
 ## 응답
 - 한국어, 반말, 짧고 캐주얼
@@ -24,6 +24,9 @@
 - 서버 작업 시 Tailscale hostname 사용 (IP X)
 - git commit: conventional commits (feat/fix/chore)
 - GitHub 접근 불가 시 `gh auth switch` 시도
+- **현재 작업과 무관한 버그/이슈를 발견하면** 즉시 수정하지 말고 메모로 기록:
+  `POST /memos` (또는 MCP `create_memo`) → folder=`inbox`, title=`bug: <한줄>`,
+  content에 재현 경로/관련 파일/추정 원인. 나중에 별도 작업으로 처리.
 
 ## 참조 (필요할 때만)
 - repo 구조/설치/dotfile 워크플로우 → `README.md`
