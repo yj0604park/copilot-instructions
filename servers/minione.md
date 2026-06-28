@@ -15,16 +15,23 @@
 |--------|------|--------|
 | Finance Frontend (Vite) | 58080 | finance.paryoja.com |
 | Finance Backend (Django) | 58000 | finance-api.paryoja.com |
-| File Organizer Frontend | 58101 | files.paryoja.com |
-| File Organizer Backend | 58100 | files-api.paryoja.com |
+| Finance Adminer | 58001 | — |
+| Finance Flower | 5555 | — |
+| Finance Docs | 9000 | — |
+| memo-service | 8100 | memo.paryoja.com |
+| People App | 3001 | — |
 | Focalboard | 8000 | focalboard.paryoja.com |
-| Gitea | 3000 | gitea.paryoja.com |
+| Gitea | 3000 (+2222 ssh) | gitea.paryoja.com |
+| Drone CI | — | — |
+| pgAdmin4 | — | — |
 | PostgreSQL (공용) | 5432 | — |
+
+> file-organizer는 yozit(NAS)로 이전됨. files.paryoja.com / files-api.paryoja.com → yozit. minione 컨테이너는 2026-06-28 종료(fo_pgdata volume만 보존).
 
 ## 프로젝트 경로
 - `~/homelab/` — 인프라 monorepo
 - `~/projects/apps/finance-main/` — Finance (submodules: backend, frontend-v2)
-- `~/projects/apps/file-organizer/` — File Organizer
+- `~/projects/apps/file-organizer/` — File Organizer (dev/source only, prod은 yozit)
 
 ## GitHub 계정
 - `yj0604park` (finance-main, infra)
