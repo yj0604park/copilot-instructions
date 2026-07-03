@@ -26,16 +26,12 @@
 | pgAdmin4 | — | — |
 | PostgreSQL (공용) | 5432 | — |
 
-> file-organizer는 yozit(NAS)로 이전됨. files.paryoja.com / files-api.paryoja.com → yozit. minione 컨테이너는 2026-06-28 종료(fo_pgdata volume만 보존).
-
 ## 프로젝트 경로
 - `~/homelab/` — 인프라 monorepo
 - `~/projects/apps/finance-main/` — Finance (submodules: backend, frontend-v2)
-- `~/projects/apps/file-organizer/` — File Organizer (dev/source only, prod은 yozit)
 
 ## GitHub 계정
 - `yj0604park` (finance-main, infra)
-- `paryojavive` (file-organizer — private repo)
 - repo 접근 불가 시 `gh auth switch` 시도
 
 ## 운영 메모

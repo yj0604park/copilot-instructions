@@ -12,8 +12,6 @@
 |--------|------|--------|
 | Synology DSM | 5000 | nas.paryoja.com |
 | Pi-hole | 8080 (web), 53 (DNS) | pihole.paryoja.com |
-| MinIO Console | 9001 | minio.paryoja.com |
-| MinIO S3 API | 9000 | s3.paryoja.com |
 
 ## 참고
 - Pi-hole은 `network_mode: host`로 실행 (클라이언트 IP 식별)
