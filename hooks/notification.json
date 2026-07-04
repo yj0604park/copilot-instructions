@@ -13,6 +13,11 @@
         "type": "command",
         "bash": "~/.copilot/hooks/scripts/notify.sh",
         "timeoutSec": 10
+      },
+      {
+        "type": "command",
+        "bash": "~/.copilot/hooks/scripts/heartbeat.sh",
+        "timeoutSec": 10
       }
     ],
     "notification": [

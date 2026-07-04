@@ -201,6 +201,10 @@ link "$REPO_DIR/hooks/notification.json"         "$HOME/.copilot/hooks/notificat
 link "$REPO_DIR/hooks/scripts/notify.sh"         "$HOME/.copilot/hooks/scripts/notify.sh"
 [[ -f "$REPO_DIR/hooks/scripts/notify-event.sh" ]] && \
   link "$REPO_DIR/hooks/scripts/notify-event.sh" "$HOME/.copilot/hooks/scripts/notify-event.sh"
+[[ -f "$REPO_DIR/hooks/scripts/session-start.sh" ]] && \
+  link "$REPO_DIR/hooks/scripts/session-start.sh" "$HOME/.copilot/hooks/scripts/session-start.sh"
+[[ -f "$REPO_DIR/hooks/scripts/heartbeat.sh" ]] && \
+  link "$REPO_DIR/hooks/scripts/heartbeat.sh" "$HOME/.copilot/hooks/scripts/heartbeat.sh"
 
 # ─────────────────────────────────────────────
 # 5b) SSH config (Include 방식)
