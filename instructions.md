@@ -1,6 +1,6 @@
 # Copilot CLI Instructions
 
-> Revision: 10
+> Revision: 11
 
 ## 응답
 - 한국어, 반말, 짧고 캐주얼
@@ -62,7 +62,10 @@
    - 현재 copilot-instructions repo의 git HEAD SHA(`instructions_sha`) 자동 보고
    - 세션별 env 파일 `~/.local/state/copilot/memo-agent-{instance}.env` 생성/갱신
    - 스크립트 stdout은 그 파일 path만 출력 → 호출자가 source로 환경 로드
-   - 동일 호스트에 동시 세션 여러 개면 각자 다른 `MEMO_AGENT_NAME` 받음 (tty+PPID 기반).
+   - 동일 호스트에 동시 세션 여러 개면 각자 다른 `MEMO_AGENT_NAME` 받음.
+     이름 = `<host>-<sid8>` (Copilot이 export하는 `COPILOT_AGENT_SESSION_ID`의
+     대시 제거 후 앞 8 hex, 소문자). 세션당 결정적이라 재시작해도(같은 세션이면)
+     동일 이름. 세션 id 없는 구버전은 tty+PPID, 최후엔 random fallback.
      명시 지정은 `COPILOT_AGENT_INSTANCE` env로.
 3. inbox 확인 (자기 앞 + 노드 앞):
    - `GET /inbox/$MEMO_AGENT_NAME?status=pending`
@@ -72,6 +75,23 @@
 
 이상 동작이 발생하면 web UI의 Agents 탭에서 각 에이전트의 `instr`(앞 7자) 컬럼을 보고
 어떤 instructions revision으로 돌고 있었는지 역추적 가능.
+
+### memo-mcp 설정 (노드별, 선택)
+
+`curl` 대신 memo MCP 도구를 쓰려면 노드에 memo-mcp를 설치하되, **bootstrap과 같은
+세션 정체성**을 갖게 래퍼로 실행해야 한다. 안 그러면 한 세션이 두 개 이름으로
+등록됨 (MCP=고정이름, bootstrap=`<host>-<sid8>`).
+
+1. `memo-service` repo에 venv 만들고 `pip install -e .` (memo-mcp 바이너리 생김).
+2. 래퍼 스크립트(예: `~/.local/bin/memo-mcp-session`): 실행 시
+   `COPILOT_AGENT_SESSION_ID`로 `MEMO_AGENT_NAME=<host>-<sid8>` 계산 후
+   memo-mcp를 `exec`. bootstrap과 **동일 규칙**(hostname 소문자 + sid에서 대시
+   제거 후 앞 8자)이어야 이름이 일치.
+3. `~/.copilot/mcp-config.json`의 `command`를 래퍼로 지정하고,
+   env엔 `MEMO_SERVICE_URL`만 두고 **고정 `MEMO_AGENT_NAME`은 넣지 말 것**
+   (래퍼가 세션별로 설정). MCP는 세션 시작 때 로드되므로 변경 후 재시작.
+4. 검증: bootstrap 로그의 이름과 `/agents`의 MCP 에이전트 이름이 동일한
+   `<host>-<sid8>`인지. (bookone 레퍼런스 구현: `~/.local/bin/memo-mcp-session`.)
 
 ### Liveness / 종료
 
