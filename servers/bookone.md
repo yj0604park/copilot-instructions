@@ -21,3 +21,6 @@
 ## 프로젝트 경로
 - `~/Workspace/` — 작업 디렉토리
 - `~/Workspace/copilot-instructions/` — dotfiles/instructions repo
+
+## 운영 메모
+- homelab-node-agent: user LaunchAgent `com.paryoja.homelab-node-agent` (gui domain, sudo 불필요), config `~/homelab-node-agent/node-agent.json`, interval 300s, Memo `/nodes` heartbeat. 로그 `~/Library/Logs/homelab-node-agent.{log,err}`
