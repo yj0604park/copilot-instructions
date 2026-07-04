@@ -46,9 +46,14 @@ host="$(hostname -s 2>/dev/null || hostname)"
 host="${host%%.*}"
 host_lower="$(printf '%s' "$host" | tr '[:upper:]' '[:lower:]')"
 
-# Per-instance id: explicit env wins, else tty+ppid, else random
+# Per-instance id: explicit env wins, else the Copilot session id (stable across
+# every tool call within one session), else tty+ppid, else random. Using the
+# session id keeps the identity stable even though each bash tool call may run
+# under a different ppid/tty.
 if [[ -n "${COPILOT_AGENT_INSTANCE:-}" ]]; then
   instance_id="$COPILOT_AGENT_INSTANCE"
+elif [[ -n "${COPILOT_AGENT_SESSION_ID:-}" ]]; then
+  instance_id="$COPILOT_AGENT_SESSION_ID"
 else
   tty_name="$(tty 2>/dev/null || true)"
   tty_name="${tty_name#/dev/}"
@@ -71,7 +76,15 @@ if [[ -f "$state_file" ]]; then
   fi
 fi
 
-uuid8="$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n' | head -c 8)"
+# Derive the per-session suffix from the Copilot session id when available so
+# the MCP server (which sees the same COPILOT_AGENT_SESSION_ID) can compute an
+# identical name and share one identity per session. Falls back to random for
+# older clients that don't export a session id.
+if [[ -n "${COPILOT_AGENT_SESSION_ID:-}" ]]; then
+  uuid8="$(printf '%s' "$COPILOT_AGENT_SESSION_ID" | tr -d '-' | tr '[:upper:]' '[:lower:]' | head -c 8)"
+else
+  uuid8="$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n' | head -c 8)"
+fi
 agent_name="${MEMO_AGENT_NAME_OVERRIDE:-${existing_name:-${host_lower}-${uuid8}}}"
 
 # Best-effort node registration (idempotent on backend)
