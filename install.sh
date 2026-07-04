@@ -58,7 +58,7 @@ install_pkg() {
 if [[ "$PM" == "brew" ]]; then
   if [[ -f "$REPO_DIR/Brewfile" ]]; then
     log "Brewfile로 패키지 설치 중..."
-    brew bundle --file="$REPO_DIR/Brewfile"
+    brew bundle --file="$REPO_DIR/Brewfile" || warn "brew bundle 일부 실패 (계속 진행)"
   else
     install_pkg zsh tmux jq fzf zsh-autosuggestions zsh-completions starship zoxide atuin gh node
   fi
