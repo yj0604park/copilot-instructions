@@ -219,6 +219,61 @@ if [[ -n "$ZSH_PATH" ]] && [[ "${SHELL:-}" != "$ZSH_PATH" ]]; then
 fi
 
 # ─────────────────────────────────────────────
+# 6.5) auto-pull 주기 실행 (launchd on macOS / cron on Linux)
+# ─────────────────────────────────────────────
+# tracked repo들을 1시간마다 안전하게 fast-forward pull. 스크립트는 dirty/ahead/
+# upstream-없음 repo를 건드리지 않는다 (scripts/auto-pull.sh 참고).
+log "auto-pull 주기 실행 설정 중..."
+AUTOPULL="$REPO_DIR/scripts/auto-pull.sh"
+AUTOPULL_LOG="$HOME/.local/state/copilot/auto-pull.log"
+mkdir -p "$(dirname "$AUTOPULL_LOG")"
+if [[ ! -x "$AUTOPULL" ]]; then
+  warn "auto-pull.sh 없음/실행불가 — 건너뜀"
+elif [[ "$OS" == "Darwin" ]]; then
+  LABEL="com.paryoja.copilot-autopull"
+  PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
+  mkdir -p "$HOME/Library/LaunchAgents"
+  cat > "$PLIST" <<PLISTEOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>$LABEL</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>$AUTOPULL</string>
+  </array>
+  <key>StartInterval</key><integer>3600</integer>
+  <key>RunAtLoad</key><false/>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+  <key>StandardOutPath</key><string>$AUTOPULL_LOG</string>
+  <key>StandardErrorPath</key><string>$AUTOPULL_LOG</string>
+</dict>
+</plist>
+PLISTEOF
+  launchctl unload "$PLIST" 2>/dev/null || true
+  if launchctl load "$PLIST" 2>/dev/null; then
+    ok "launchd auto-pull 등록 (1h): $LABEL"
+  else
+    warn "launchctl load 실패 — 수동 확인 필요: $PLIST"
+  fi
+elif [[ "$OS" == "Linux" ]]; then
+  CRON_LINE="0 * * * * /bin/bash $AUTOPULL >/dev/null 2>&1"
+  CRON_TAG="# copilot-autopull"
+  CUR="$(crontab -l 2>/dev/null || true)"
+  if printf '%s\n' "$CUR" | grep -qF "$AUTOPULL"; then
+    ok "cron auto-pull 이미 등록됨"
+  else
+    { printf '%s\n' "$CUR"; printf '%s %s\n' "$CRON_LINE" "$CRON_TAG"; } | crontab - \
+      && ok "cron auto-pull 등록 (매시 정각)" || warn "crontab 등록 실패"
+  fi
+fi
+
+# ─────────────────────────────────────────────
 # 7) 검증
 # ─────────────────────────────────────────────
 echo
