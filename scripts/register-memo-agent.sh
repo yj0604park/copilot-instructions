@@ -14,6 +14,27 @@ exec 3>&1
 exec 1>&2
 
 memo_url="${MEMO_SERVICE_URL:-https://memo.paryoja.com}"
+# Track whether the caller explicitly pinned a URL (then we never override it).
+memo_url_explicit="${MEMO_SERVICE_URL:+yes}"
+
+# Reachability probe + LAN fallback.
+# Some nodes (e.g. Synology with userspace Tailscale) can't reach the public
+# tailnet URL and otherwise have to override MEMO_SERVICE_URL every session.
+# When the caller did NOT pin a URL and the default is unreachable, try the
+# LAN backend directly. Candidates: $MEMO_SERVICE_URL_FALLBACK, then the known
+# minione LAN address. Nodes on a different subnet just fall through (3s cost).
+_probe_memo() { curl -fsS -m 3 -o /dev/null "${1%/}/openapi.json" 2>/dev/null; }
+if [[ -z "$memo_url_explicit" ]] && ! _probe_memo "$memo_url"; then
+  for cand in "${MEMO_SERVICE_URL_FALLBACK:-}" "http://10.0.0.144:8100"; do
+    [[ -n "$cand" ]] || continue
+    if _probe_memo "$cand"; then
+      echo "primary memo-service $memo_url unreachable; falling back to $cand" >&2
+      memo_url="$cand"
+      break
+    fi
+  done
+fi
+
 host="$(hostname -s 2>/dev/null || hostname)"
 host="${host%%.*}"
 host_lower="$(printf '%s' "$host" | tr '[:upper:]' '[:lower:]')"
