@@ -35,6 +35,12 @@
 - **homelab-node-agent**: Docker `~/docker/homelab-node-agent`(python:3.12-slim, `network_mode: host`,
   `/volume1` ro 마운트), `--loop` 5분 heartbeat. 체크아웃 `~/homelab-node-agent`, config `node-agent.json`
   (`memo_service_url=http://10.0.0.144:8100` LAN 직접). 로그 `docker logs homelab-node-agent`.
+  git_repos fetch(cf4e008+): compose에 `gh`+`~/.config/gh` 마운트 & 각 repo `.git` rw 마운트.
+  코드 갱신 `git pull` 후 **`docker restart homelab-node-agent`**(--loop이라 필수).
+- **gh CLI**: `~/bin/gh`(v2.96) device-flow 인증, 계정 `yj0604park`+`paryojavive` 둘 다 로그인.
+  config `~/.config/gh`(plain text). node-agent fetch가 owner-priority로 계정 자동 선택.
+- **git remotes**: media-platform/media-browser/docs-core origin은 ssh alias→**https 전환**됨
+  (컨테이너에 ssh 없어 gh 토큰 fetch 위함). host/컨테이너 pull 모두 gh 크레덴셜(paryojavive) 사용.
 - **tmux**: static 바이너리 `~/bin/tmux`(3.6b), PATH는 `~/.profile`에 추가.
-- **docs-core**: repo `paryojavive/docs-core`, deploy key `~/.ssh/dc_deploy`(alias `github-dc`),
-  갱신 `~/docker/docs-core/scripts/dc-update.sh`.
+- **docs-core**: repo `paryojavive/docs-core`, origin은 https(gh 토큰 pull; 구 deploy key
+  `~/.ssh/dc_deploy`/alias `github-dc`는 잔존), 갱신 `~/docker/docs-core/scripts/dc-update.sh`.
