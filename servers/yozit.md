@@ -41,6 +41,12 @@
   config `~/.config/gh`(plain text). node-agent fetch가 owner-priority로 계정 자동 선택.
 - **git remotes**: media-platform/media-browser/docs-core origin은 ssh alias→**https 전환**됨
   (컨테이너에 ssh 없어 gh 토큰 fetch 위함). host/컨테이너 pull 모두 gh 크레덴셜(paryojavive) 사용.
+- **memo-mcp**: host python 3.8(<3.11 요구)라 Docker 래핑. 이미지 `memo-mcp:local`
+  (`~/docker/memo-mcp-runner/Dockerfile`, python:3.12-slim + httpx/dotenv/mcp, `mcp_server.py`만).
+  코드 원본 `~/docker/memo-mcp`(repo yj0604park/memo-service). copilot 등록:
+  `~/.copilot/mcp-config.json` 서버 "memo" = `docker run -i --rm --network host memo-mcp:local`,
+  env `MEMO_SERVICE_URL=http://10.0.0.144:8100`(LAN) + `MEMO_AGENT_NAME=yozit`. mcp_server 갱신 시
+  `~/docker/memo-mcp` pull → `cp mcp_server.py ~/docker/memo-mcp-runner/ && docker build -t memo-mcp:local`.
 - **tmux**: static 바이너리 `~/bin/tmux`(3.6b), PATH는 `~/.profile`에 추가.
 - **docs-core**: repo `paryojavive/docs-core`, origin은 https(gh 토큰 pull; 구 deploy key
   `~/.ssh/dc_deploy`/alias `github-dc`는 잔존), 갱신 `~/docker/docs-core/scripts/dc-update.sh`.
