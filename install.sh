@@ -23,8 +23,10 @@ case "$OS" in
     if have apt-get; then
       PM="apt"
     else
-      err "지원되지 않는 Linux 배포판 (apt 필요). 수동 설치 필요."
-      exit 1
+      # apt 없는 Linux(예: Synology NAS) → core-only 모드.
+      # 패키지/툴 설치는 건너뛰고 symlink + install stamp 만 수행.
+      PM="none"
+      warn "apt 없음 → core-only 모드 (symlink + stamp 만, 패키지 설치 skip)"
     fi
     ;;
   *)
@@ -38,6 +40,10 @@ ok "OS=$OS, package manager=$PM"
 # 2) 패키지 설치
 # ─────────────────────────────────────────────
 log "기본 패키지 설치 중..."
+
+if [[ "$PM" == "none" ]]; then
+  warn "core-only 모드: 패키지/툴 설치 단계 전부 skip"
+fi
 
 install_pkg() {
   case "$PM" in
@@ -62,7 +68,7 @@ if [[ "$PM" == "brew" ]]; then
   else
     install_pkg zsh tmux jq fzf zsh-autosuggestions zsh-completions starship zoxide atuin gh node
   fi
-else
+elif [[ "$PM" == "apt" ]]; then
   # apt에 zsh-completions 없음 → git clone 으로 따로 처리
   # zoxide는 Debian 12+ / Ubuntu 22.04+ 에만 있어서 fallback 처리
   install_pkg zsh tmux jq fzf zsh-autosuggestions vim curl
@@ -82,6 +88,13 @@ if [[ "$PM" == "apt" ]] && [[ ! -d "$HOME/.zsh-completions" ]]; then
   git clone --depth 1 https://github.com/zsh-users/zsh-completions.git "$HOME/.zsh-completions"
   ok "$HOME/.zsh-completions 설치됨"
 fi
+
+# ─────────────────────────────────────────────
+# 4~4-3) 툴 설치 (core-only 모드에서는 전부 skip)
+# ─────────────────────────────────────────────
+if [[ "$PM" == "none" ]]; then
+  warn "core-only: starship/zoxide/atuin/oh-my-zsh/plugins 설치 skip"
+else
 
 # ─────────────────────────────────────────────
 # 4) Starship (apt에 없으면 install.sh)
@@ -153,6 +166,8 @@ clone_omz_plugin() {
 
 clone_omz_plugin zsh-autosuggestions     https://github.com/zsh-users/zsh-autosuggestions.git
 clone_omz_plugin zsh-syntax-highlighting  https://github.com/zsh-users/zsh-syntax-highlighting.git
+
+fi  # end core-only tool-install guard
 
 # ─────────────────────────────────────────────
 # 5) Symlink 셋업
