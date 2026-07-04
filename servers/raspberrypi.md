@@ -37,5 +37,5 @@
 - SSH 원격 작업 시 PATH: `/usr/local/bin:/usr/bin` (기본으로 충분)
 - status report: cron `0 23`, `scripts/system-health.py` → Slack DM `C0AFD7AQ4QK` (이미 셋업)
 - node heartbeat: `homelab-node-agent.service` (systemd, **User=diehard**, enabled) → Memo `/nodes` 5분 주기. repo `~/homelab-node-agent`, config `node-agent.json`. git_repos 리포트(workspace/copilot-instructions/homelab-node-agent 절대경로). root로 돌리면 `~`가 /root라 git_repos 깨짐 → 반드시 User=diehard
-- cron 자동화(market/insta/youtube/브리핑/slack-inbox)는 스케줄 잡이라 node-agent services 자동탐지에 안 잡힘. cron_jobs 콜렉터 minione에 구현 요청함(2026-07-03, pending)
+- cron 자동화 리포팅: node-agent `cron_jobs` 콜렉터(minione 구현)로 metadata.cron_jobs에 잡별 신선도(log mtime)+ok+last_error 표시. config에 10개 등록(flush/slack-inbox/youtube/disk-cookie/daily5/weekly). `cron_error_log`=memory/cron-errors.jsonl. ※ market 잡은 weekday+TZ 가드라 로그 MISSING 시 오탐 → 제외
 - gallery: yozit media server로 기능 마이그레이션 완료 (`gallery.service`는 6/30 중지+disable, 이 머신에선 미운영)
