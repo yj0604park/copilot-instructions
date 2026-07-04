@@ -24,11 +24,22 @@
 
 ## 참고
 - Pi-hole은 `network_mode: host`로 실행 (클라이언트 IP 식별)
+  - **`dns.listeningMode = ALL`** (기존 LOCAL). tailscale tun 모드 전환 후 tailnet 클라(100.x)가
+    yozit tailnet IP:53으로 직접 질의하면 LOCAL 모드가 CGNAT 소스를 거부 → tailnet DNS 전멸.
+    ALL로 풀어야 tailnet 클라가 응답받고 per-client 통계도 실제 IP로 찍힘. :53 인터넷 미노출이라 안전.
+    변경: `docker exec pihole pihole-FTL --config dns.listeningMode ALL` 후 `docker restart pihole`.
 - Synology Drive로 Obsidian vault 동기화
-- **tailscale userspace 모드** (`/dev/net/tun` 없음): 호스트발 tailnet TCP 불가
-  (`tailscale ping`은 되지만 curl 등 TCP는 timeout). tailnet 서비스는 **LAN IP로 직접** 접근.
-  예: memo-service는 `memo.paryoja.com`(minitwo 프록시) 대신 `http://10.0.0.144:8100`(minione LAN).
+- **tailscale tun 모드** (2026-07 전환, 이전엔 userspace): DS220+에 `tun.ko` 존재 →
+  `insmod /lib/modules/tun.ko` + `mknod /dev/net/tun c 10 200` + `chmod 0666` 하면
+  DSM7 패키지 스크립트(`/var/packages/Tailscale/scripts/start-stop-status`)가 `/dev/net/tun` 있으면
+  `--tun=userspace-networking` 플래그를 자동 생략 → 패키지 restart 시 tun 모드로 뜸(`tailscale0` iface).
+  tailscaled는 CapEff에 CAP_NET_ADMIN/NET_RAW 있어 non-root(tailscale user)로도 tun 동작.
+  - 효과: 호스트발 tailnet TCP 가능(전엔 timeout), subnet router/exit node 가능.
+  - **영속화 필수**: 재부팅 시 tun.ko/dev node 날아가고 DSM7 스크립트는 재생성 안 함(early-return).
+    DSM 작업 스케줄러 **부팅 트리거 root 태스크**로 insmod+mknod+chmod+`synopkg restart Tailscale`.
+  - MagicDNS 이름(`*.ts.net`)은 시스템 resolver가 안 봄 → tailnet은 100.x IP 직접 접근이 확실.
 - 패키지매니저 없음(DSM 7.2, x86_64). CLI 도구는 static 바이너리로 설치.
+  - `install.sh`는 apt 없으면 `PM=none` core-only 모드(symlink+stamp만, 패키지설치 skip).
 - 유저 `crontab` 없음, sudo는 비번 필요 → 스케줄 작업은 Docker(restart 정책)로.
 
 ## 운영 메모
