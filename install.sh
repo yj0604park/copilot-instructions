@@ -225,6 +225,21 @@ echo
 log "검증:"
 bash "$REPO_DIR/check-symlinks.sh"
 
+# ─────────────────────────────────────────────
+# 8) install stamp (적용 완료 커밋 기록)
+# ─────────────────────────────────────────────
+# 현재 HEAD 를 .git/installed-commit 에 남긴다 (untracked, 머신별).
+# node-agent 가 이 값과 HEAD 를 비교해 "pull만 하고 install 안 함" 을 감지한다.
+if git -C "$REPO_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  STAMP_HEAD="$(git -C "$REPO_DIR" rev-parse HEAD 2>/dev/null || true)"
+  GIT_DIR="$(git -C "$REPO_DIR" rev-parse --git-dir 2>/dev/null || true)"
+  if [[ -n "$STAMP_HEAD" && -n "$GIT_DIR" ]]; then
+    case "$GIT_DIR" in /*) ;; *) GIT_DIR="$REPO_DIR/$GIT_DIR" ;; esac
+    printf '%s\n' "$STAMP_HEAD" > "$GIT_DIR/installed-commit"
+    ok "install stamp: ${STAMP_HEAD:0:12}"
+  fi
+fi
+
 echo
 ok "셋업 완료!"
 echo
