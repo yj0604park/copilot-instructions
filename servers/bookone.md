@@ -24,3 +24,6 @@
 
 ## 운영 메모
 - homelab-node-agent: user LaunchAgent `com.paryoja.homelab-node-agent` (gui domain, sudo 불필요), config `~/homelab-node-agent/node-agent.json`, interval 300s, Memo `/nodes` heartbeat. 로그 `~/Library/Logs/homelab-node-agent.{log,err}`
+  - plist `EnvironmentVariables.PATH`에 `/Applications/Tailscale.app/Contents/MacOS`(tailscale CLI=GUI앱 바이너리) 등 포함해야 tailscale_name FQDN 수집됨. docker는 미설치.
+  - plist 수정 후엔 `kickstart -k`가 아니라 `launchctl bootout gui/$(id -u)/com.paryoja.homelab-node-agent && launchctl bootstrap gui/$(id -u) <plist>`로 재로드해야 반영됨 (kickstart는 캐시된 정의 사용).
+  - service_checks는 비움(bookone은 memo-service 비호스팅). tailscale_name=bookone.tail591527.ts.net
