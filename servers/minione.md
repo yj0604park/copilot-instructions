@@ -40,3 +40,7 @@
   - 로그: `/tmp/system-health.log`
   - 수동 테스트: `python3 scripts/system-health-macos.py --dry-run`
   - macOS는 cron에 Full Disk Access 권한 이슈가 있어 launchd 사용
+- homelab-node-agent: user LaunchAgent `~/Library/LaunchAgents/com.paryoja.homelab-node-agent.plist`, 5분 loop → memo-service `/nodes` heartbeat
+  - checkout: `~/projects/apps/homelab-node-agent`, config: `node-agent.json` (gitignore)
+  - repo 기본 `install-launchd.sh`는 sudo LaunchDaemon이지만 minione은 user LaunchAgent로 설치(관례)
+  - 로그: `/tmp/homelab-node-agent.err`
