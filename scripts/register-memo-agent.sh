@@ -17,15 +17,22 @@ memo_url="${MEMO_SERVICE_URL:-https://memo.paryoja.com}"
 # Track whether the caller explicitly pinned a URL (then we never override it).
 memo_url_explicit="${MEMO_SERVICE_URL:+yes}"
 
-# Reachability probe + LAN fallback.
-# Some nodes (e.g. Synology with userspace Tailscale) can't reach the public
-# tailnet URL and otherwise have to override MEMO_SERVICE_URL every session.
-# When the caller did NOT pin a URL and the default is unreachable, try the
-# LAN backend directly. Candidates: $MEMO_SERVICE_URL_FALLBACK, then the known
-# minione LAN address. Nodes on a different subnet just fall through (3s cost).
+# Reachability probe + fallback to a direct backend address.
+# The default URL (memo.paryoja.com) enters via MiniTwo Traefik and proxies to
+# the minione backend. If that public path is down, try reaching the backend
+# directly. Fallback order:
+#   1. $MEMO_SERVICE_URL_FALLBACK (node-specific override)
+#   2. minione over the tailnet (subnet-independent; works for any node whose
+#      Tailscale does real TCP)
+#   3. minione over LAN (for nodes like Synology on userspace Tailscale, which
+#      can't do host-originated tailnet TCP but share the 10.0.0.0/24 subnet)
+# Nodes that match none just fall through (each miss costs ~3s). The caller
+# pinning MEMO_SERVICE_URL disables all of this.
 _probe_memo() { curl -fsS -m 3 -o /dev/null "${1%/}/openapi.json" 2>/dev/null; }
 if [[ -z "$memo_url_explicit" ]] && ! _probe_memo "$memo_url"; then
-  for cand in "${MEMO_SERVICE_URL_FALLBACK:-}" "http://10.0.0.144:8100"; do
+  for cand in "${MEMO_SERVICE_URL_FALLBACK:-}" \
+              "http://minione.tail591527.ts.net:8100" \
+              "http://10.0.0.144:8100"; do
     [[ -n "$cand" ]] || continue
     if _probe_memo "$cand"; then
       echo "primary memo-service $memo_url unreachable; falling back to $cand" >&2
