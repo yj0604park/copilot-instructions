@@ -1,0 +1,26 @@
+# Homelab SSH config (managed in dotfiles repo)
+#
+# 이 파일은 ~/.ssh/config 에서 `Include` 로 불러온다 (install.sh 가 배선).
+# 여기엔 비밀을 넣지 않는다 — 개인키는 IdentityFile 경로로만 참조하고,
+# 키 파일 자체와 비밀번호는 절대 커밋하지 않는다.
+# 머신별/일회성 호스트는 repo 밖 ~/.ssh/config 에 로컬로 둔다.
+#
+# 접속은 Tailscale hostname 기준 (raw IP 사용 금지).
+
+Host minitwo
+  HostName minitwo
+
+Host minione
+  HostName minione
+
+Host rs
+  HostName raspberrypi
+  User diehard
+
+Host yozit
+  HostName yozit
+  User paryoja
+
+Host *
+  ServerAliveInterval 30
+  ServerAliveCountMax 30

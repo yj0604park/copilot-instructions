@@ -188,6 +188,28 @@ link "$REPO_DIR/hooks/scripts/notify.sh"         "$HOME/.copilot/hooks/scripts/n
   link "$REPO_DIR/hooks/scripts/notify-event.sh" "$HOME/.copilot/hooks/scripts/notify-event.sh"
 
 # ─────────────────────────────────────────────
+# 5b) SSH config (Include 방식)
+# ─────────────────────────────────────────────
+# repo의 ssh/config 를 ~/.ssh/config 상단에서 Include 한다.
+# symlink 대신 Include 라 머신별/일회성 호스트는 로컬 ~/.ssh/config 에 유지 가능.
+log "SSH config Include 배선 중..."
+SSH_DIR="$HOME/.ssh"
+mkdir -p "$SSH_DIR"
+chmod 700 "$SSH_DIR"
+INC_LINE="Include $REPO_DIR/ssh/config"
+if [[ ! -f "$SSH_DIR/config" ]]; then
+  printf '%s\n' "$INC_LINE" > "$SSH_DIR/config"
+  ok "~/.ssh/config 생성 + Include 추가"
+elif ! grep -qxF "$INC_LINE" "$SSH_DIR/config"; then
+  tmp="$(mktemp)"
+  printf '%s\n\n' "$INC_LINE" | cat - "$SSH_DIR/config" > "$tmp" && mv "$tmp" "$SSH_DIR/config"
+  ok "~/.ssh/config 상단에 Include 추가"
+else
+  ok "~/.ssh/config Include 이미 존재"
+fi
+chmod 600 "$SSH_DIR/config"
+
+# ─────────────────────────────────────────────
 # 6) 기본 셸을 zsh로 (선택)
 # ─────────────────────────────────────────────
 ZSH_PATH="$(command -v zsh || true)"
