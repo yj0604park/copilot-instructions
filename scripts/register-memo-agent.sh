@@ -126,5 +126,46 @@ curl -fsS -m 3 -H "Content-Type: application/json" -X POST \
 printf 'memo agent registered: %s (node: %s, instance: %s, instr: %s)\n' \
   "$agent_name" "$host_lower" "$instance_id" "${instructions_sha:0:7}"
 
+# --- Background heartbeat daemon (no LLM tokens) ---
+# Keep this agent "online" while the Copilot session lives, without waking the
+# model. A fully detached daemon pings /heartbeat every 5 min and self-terminates
+# when the owning Copilot process exits, so the agent goes offline naturally on
+# the server's idle timeout. Detaching (setsid / nohup+disown) is what keeps the
+# CLI's TUI from showing a perpetual "working" spinner. Skips if one is already
+# running for this instance.
+_start_heartbeat_daemon() {
+  local pidfile="$state_dir/hb-${instance_id}.pid"
+  if [[ -f "$pidfile" ]]; then
+    local old; old="$(cat "$pidfile" 2>/dev/null || true)"
+    if [[ -n "$old" ]] && kill -0 "$old" 2>/dev/null; then
+      return 0  # already running for this instance
+    fi
+  fi
+  # Find the Copilot process to watch by walking up the parent chain; fall back
+  # to the immediate parent if none matches.
+  local watch_pid="$PPID" p="$PPID" comm
+  while [[ "${p:-0}" -gt 1 ]]; do
+    comm="$(ps -o comm= -p "$p" 2>/dev/null || true)"
+    if [[ "$comm" == *copilot* ]]; then watch_pid="$p"; break; fi
+    p="$(ps -o ppid= -p "$p" 2>/dev/null | tr -d ' ' || true)"
+  done
+  local runner=""
+  command -v setsid >/dev/null 2>&1 && runner="setsid"
+  $runner nohup bash -c '
+    hb_url="$1"; watch="$2"; pf="$3"
+    echo $$ > "$pf"
+    trap "rm -f \"$pf\"; exit 0" TERM INT
+    while kill -0 "$watch" 2>/dev/null; do
+      curl -fsS -m 5 -o /dev/null -X POST -H "Content-Type: application/json" \
+        -d "{}" "$hb_url" 2>/dev/null || true
+      sleep 300
+    done
+    rm -f "$pf"
+  ' _ "${memo_url%/}/agents/${agent_name}/heartbeat" "$watch_pid" "$pidfile" \
+    </dev/null >/dev/null 2>&1 3>&- &
+  disown 2>/dev/null || true
+}
+_start_heartbeat_daemon || true
+
 # Emit state file path on fd 3 for the caller to source
 echo "$state_file" >&3
