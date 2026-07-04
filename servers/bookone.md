@@ -27,5 +27,5 @@
   - **실행 방식: `--once` + `StartInterval 300` (주기 실행)**. launchd가 5분마다 fresh 프로세스 spawn → 코드/config 변경 자동 반영, 재시작 불필요. (구: `--loop`+`KeepAlive` 장기 프로세스였는데 코드 바뀔 때마다 수동 재시작 필요해서 전환)
   - plist `EnvironmentVariables.PATH`에 `/Applications/Tailscale.app/Contents/MacOS`(tailscale CLI=GUI앱 바이너리) 등 포함해야 tailscale_name FQDN 수집됨. docker는 미설치.
   - plist 수정 후엔 `kickstart -k`가 아니라 `launchctl bootout gui/$(id -u)/com.paryoja.homelab-node-agent && launchctl bootstrap gui/$(id -u) <plist>`로 재로드해야 반영됨 (kickstart는 캐시된 정의 사용).
-  - git 리포트: config `git_repos_scan: ["~/Workspace"]`로 하위 repo 자동 스캔. install stamp(`.git/installed-commit`)로 install_pending 판정.
+  - git 리포트: config `git_repos_scan: ["~/Workspace"]`(하위 자동스캔) + `git_repos: ["~/homelab-node-agent"]`(스캔 밖이라 명시). install stamp(`.git/installed-commit`)로 install_pending 판정.
   - service_checks는 비움(bookone은 memo-service 비호스팅). tailscale_name=bookone.tail591527.ts.net
