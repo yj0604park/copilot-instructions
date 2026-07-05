@@ -13,7 +13,16 @@
 # the local ff-merge here needs no network; a best-effort fetch is still tried.
 set -uo pipefail
 
-CONFIG="${NODE_AGENT_CONFIG:-$HOME/homelab-node-agent/node-agent.json}"
+# node-agent config path differs per machine; auto-discover across known
+# locations unless NODE_AGENT_CONFIG is set explicitly.
+CONFIG="${NODE_AGENT_CONFIG:-}"
+if [[ -z "$CONFIG" ]]; then
+  for c in "$HOME/projects/apps/homelab-node-agent/node-agent.json" \
+           "$HOME/homelab-node-agent/node-agent.json" \
+           "$HOME/.config/homelab-node-agent/config.json"; do
+    [[ -f "$c" ]] && { CONFIG="$c"; break; }
+  done
+fi
 LOG="${AUTO_PULL_LOG:-$HOME/.local/state/copilot/auto-pull.log}"
 mkdir -p "$(dirname "$LOG")"
 
@@ -47,8 +56,17 @@ PY
   )
 fi
 if [[ ${#repos[@]} -eq 0 ]]; then
-  for child in "$HOME"/Workspace/*; do [[ -d "$child/.git" ]] && repos+=("$child"); done
+  for base in "$HOME/projects" "$HOME/projects/apps" "$HOME/Workspace"; do
+    [[ -d "$base" ]] || continue
+    for child in "$base"/*; do [[ -d "$child/.git" ]] && repos+=("$child"); done
+  done
   [[ -d "$HOME/homelab-node-agent/.git" ]] && repos+=("$HOME/homelab-node-agent")
+fi
+
+# bash 3.2 treats "${empty[@]}" under `set -u` as unbound and aborts; bail early.
+if [[ ${#repos[@]} -eq 0 ]]; then
+  log "no repos to track (config=${CONFIG:-none})"
+  exit 0
 fi
 
 updated=0; skipped=0
