@@ -20,6 +20,10 @@
 | docs-core (api/frontend) | 8020 / 8084 | docs.paryoja.com |
 
 - 대부분 Docker(`~/docker/*`, `restart: unless-stopped`)로 운영 → 재부팅 자동 복구
+- 상시 running 컨테이너 8개 = 위 표의 3개 앱 × (api+frontend) + postgres + caddy + pihole.
+  합쳐서 CPU 0.7% 수준이라 체감 성능과는 무관 (2026-08-01 측정).
+  - `media-platform-api-1` 만 RSS 5.5GB (mem limit 없음). OOM/재시작 이력은 없으나 증가 추세 주시.
+  - `minio`는 4주째 정지인데 `caddy-files-s3`(files-s3.paryoja.com)는 계속 떠 있음 → 백엔드 없는 프록시
 - MEDIA_ROOT=`/volume1/sorted/library`, docs Backup=`/volume1/homes/paryoja/Backup`
 
 ## 참고
@@ -43,6 +47,10 @@
 - 유저 `crontab` 없음, sudo는 비번 필요 → 스케줄 작업은 Docker(restart 정책)로.
 
 ## 운영 메모
+- **Copilot CLI 장시간 세션 금지**: yozit에서 tmux로 Copilot 세션을 계속 띄워두지 말 것.
+  필요할 때 다른 머신에서 SSH로 붙는다. 근거: 2026-08-01에 먹통 세션 하나(`R` 상태 busy loop)가
+  36시간 동안 CPU time 17시간을 태우며 2코어 중 절반을 상시 점유, `which <defunct>` 좀비도 누적.
+  죽인 뒤 user CPU 30% → 4.4%. J4025 2코어라 프로세스 하나 꼬이면 머신 전체가 느려진다.
 - **homelab-node-agent**: Docker `~/docker/homelab-node-agent`(python:3.12-slim, `network_mode: host`,
   `/volume1` ro 마운트), `--loop` 5분 heartbeat. 체크아웃 `~/homelab-node-agent`, config `node-agent.json`
   (`memo_service_url=http://10.0.0.144:8100` LAN 직접). 로그 `docker logs homelab-node-agent`.
