@@ -20,8 +20,11 @@
 - [x] bookone node-agent 복구 (2026-08-01) — plist의 bare `python3`를 절대경로로. launchd가
       job PATH 무시하고 /usr/bin/python3(CLT 3.9)를 잡다가 spawn 실패(EX_CONFIG 78)로 3주간 무음 정지
 - [ ] 노드 stale 알림 — homelab-node-agent가 죽어도 아무도 모른다 (bookone은 2026-07-12부터
-      3주간 방치, yozit 컨테이너도 같은 시기 Exited). memo-service가 24h 무heartbeat 노드를
-      Slack으로 알리도록 요청함 (minione 소유). 리포터가 죽으면 리포트가 안 오는 순환 구조를 끊는 게 목적
+      3주간 방치, yozit도 2026-07-10부터 3주간 정지 — 둘 다 사람이 우연히 발견). memo-service가
+      24h 무heartbeat 노드를 Slack으로 알리도록 요청함 (minione 소유). 리포터가 죽으면 리포트가
+      안 오는 순환 구조를 끊는 게 목적. **두 건 다 복구했지만 알림이 없으면 다음에 또 반복된다**
+- [x] yozit node-agent 복구 (2026-08-01) — 07-10 재부팅 직전 명시적 stop → `unless-stopped`가
+      수동 정지를 존중해 부팅 후에도 안 올라옴. `docker start`로 복구, 원인은 `servers/yozit.md`에 기록
 - [x] system-health 스크립트 통합 — `scripts/system-health.py` 하나로 macOS/Linux/Synology 지원.
       배선은 `scripts/setup-status-report.sh`. bookone/rpi/yozit에서 동작 검증
 - [x] CI — GitHub Actions shellcheck + bash -n + py_compile (`.github/workflows/lint.yml`)

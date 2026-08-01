@@ -61,6 +61,12 @@
   (`memo_service_url=http://10.0.0.144:8100` LAN 직접). 로그 `docker logs homelab-node-agent`.
   git_repos fetch(cf4e008+): compose에 `gh`+`~/.config/gh` 마운트 & 각 repo `.git` rw 마운트.
   코드 갱신 `git pull` 후 **`docker restart homelab-node-agent`**(--loop이라 필수).
+  - **`unless-stopped`는 재부팅으로 부활하지 않는다** (2026-08-01 3주 무음 정지 원인).
+    2026-07-10 재부팅 5분 전 컨테이너가 명시적으로 stop됐고(exit 137, `OOMKilled=false`,
+    로그에 에러 한 줄 없음), docker는 "수동 정지"를 재부팅 후에도 존중해서 영영 안 올라왔다.
+    같은 정책의 caddy/pihole은 부팅 직후 11:03에 정상 복귀 → **정책 문제가 아니라 상태 문제**.
+    진단은 `docker inspect -f '{{.State.StartedAt}} {{.State.FinishedAt}}'`로 다른 컨테이너와
+    비교하는 게 가장 빠르다. 부팅 시각에 안 올라온 놈만 보면 됨. 복구는 `docker start`.
 - **gh CLI**: `~/bin/gh`(v2.96) device-flow 인증, 계정 `yj0604park`+`paryojavive` 둘 다 로그인.
   config `~/.config/gh`(plain text). node-agent fetch가 owner-priority로 계정 자동 선택.
 - **git remotes**: media-platform/media-browser/docs-core origin은 ssh alias→**https 전환**됨
