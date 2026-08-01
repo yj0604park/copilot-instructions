@@ -22,8 +22,13 @@
 - 대부분 Docker(`~/docker/*`, `restart: unless-stopped`)로 운영 → 재부팅 자동 복구
 - 상시 running 컨테이너 8개 = 위 표의 3개 앱 × (api+frontend) + postgres + caddy + pihole.
   합쳐서 CPU 0.7% 수준이라 체감 성능과는 무관 (2026-08-01 측정).
-  - `media-platform-api-1` 만 RSS 5.5GB (mem limit 없음). OOM/재시작 이력은 없으나 증가 추세 주시.
-  - `minio`는 4주째 정지인데 `caddy-files-s3`(files-s3.paryoja.com)는 계속 떠 있음 → 백엔드 없는 프록시
+  - **`docker stats` MemUsage는 page cache를 포함하니 그대로 믿지 말 것.** media-platform-api가
+    5.5GB로 보였지만 cgroup `memory.stat` 확인 결과 `rss=184MB`, `cache=11.4GB`였다
+    (미디어 파일 읽기로 쌓인 reclaimable page cache). 누수 아님. 판별:
+    `docker inspect -f '{{.Id}}'` → `/sys/fs/cgroup/memory/docker/<id>/memory.stat` 의 rss vs cache
+  - **`caddy-files-s3` 컨테이너는 이름만 files-s3**이고 실제로는 media/browser/docs/files-s3
+    4개 vhost를 전부 처리한다 (`~/docker/caddy/Caddyfile`). 지우면 안 됨.
+    단 `files-s3` vhost만 `10.0.0.172:9000`(minio)을 보는데 minio가 4주째 정지 → 그 호스트만 죽은 프록시
 - MEDIA_ROOT=`/volume1/sorted/library`, docs Backup=`/volume1/homes/paryoja/Backup`
 
 ## 참고
