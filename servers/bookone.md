@@ -27,6 +27,8 @@
 - auto-pull: user LaunchAgent `com.paryoja.copilot-autopull`, `StartInterval 3600`, `scripts/auto-pull.sh` (install.sh가 자동 배선). 로그 `~/.local/state/copilot/auto-pull.log`. clean+behind+ahead=0 인 repo만 ff-merge
 - status report: LaunchAgent `com.paryoja.system-health`, 매일 23:00, `scripts/system-health.py` → Slack DM `C0AFD7AQ4QK`. 토큰 `~/.config/system-health/env`(chmod 600), 로그 `/tmp/system-health.log`. 배선은 `scripts/setup-status-report.sh`
 - homelab-node-agent: user LaunchAgent `com.paryoja.homelab-node-agent` (gui domain, sudo 불필요), config `~/homelab-node-agent/node-agent.json`, interval 300s, Memo `/nodes` heartbeat. 로그 `~/Library/Logs/homelab-node-agent.{log,err}`
+  - **ProgramArguments의 python3는 절대경로(`/opt/homebrew/bin/python3`)여야 한다.** bare `python3`는 launchd가 job의 `EnvironmentVariables.PATH`가 아니라 자기 기본 PATH(`/usr/bin:/bin:...`)로 해석해서 `/usr/bin/python3`(CommandLineTools 3.9)를 잡는다. 그게 깨지면 spawn 실패(`last exit code = 78 EX_CONFIG`)로 **로그 한 줄 안 남기고 조용히 멈춘다**. 실제로 2026-07-12 ~ 08-01 3주간 이 상태로 방치됨 (2026-08-01 절대경로로 수정)
+  - 살아있는지 확인: `launchctl print gui/$(id -u)/com.paryoja.homelab-node-agent | grep -E "runs|last exit"` + `tail ~/Library/Logs/homelab-node-agent.err` 의 마지막 타임스탬프
   - **실행 방식: `--once` + `StartInterval 300` (주기 실행)**. launchd가 5분마다 fresh 프로세스 spawn → 코드/config 변경 자동 반영, 재시작 불필요. (구: `--loop`+`KeepAlive` 장기 프로세스였는데 코드 바뀔 때마다 수동 재시작 필요해서 전환)
   - plist `EnvironmentVariables.PATH`에 `/Applications/Tailscale.app/Contents/MacOS`(tailscale CLI=GUI앱 바이너리) 등 포함해야 tailscale_name FQDN 수집됨. docker는 미설치.
   - plist 수정 후엔 `kickstart -k`가 아니라 `launchctl bootout gui/$(id -u)/com.paryoja.homelab-node-agent && launchctl bootstrap gui/$(id -u) <plist>`로 재로드해야 반영됨 (kickstart는 캐시된 정의 사용).

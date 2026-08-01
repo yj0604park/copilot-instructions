@@ -17,6 +17,8 @@
   - **미결정**: 도구 확정 / 배포 노드 / 마이그레이션 범위(어느 `.env`부터)
 - [ ] DNS failover 클라이언트 배포 — rpi pihole은 secondary로 준비됨(adblock+record sync 완료)이나, 클라이언트가 rpi를 2차 DNS로 안 봐서 yozit 다운 시 전체 다운됨. 라우터 DHCP에 DNS 2개(yozit + rpi) 배포 필요. 선결: (1) 10.0.0.0/24 DHCP 주체 확인, (2) 중첩 NAT라 rpi 도달 IP(tailnet/포트포워드) 확정. 하드 failover 원하면 keepalived VIP(단, 서브넷 다름 → L2 브리지 필요)
 
+- [x] bookone node-agent 복구 (2026-08-01) — plist의 bare `python3`를 절대경로로. launchd가
+      job PATH 무시하고 /usr/bin/python3(CLT 3.9)를 잡다가 spawn 실패(EX_CONFIG 78)로 3주간 무음 정지
 - [ ] 노드 stale 알림 — homelab-node-agent가 죽어도 아무도 모른다 (bookone은 2026-07-12부터
       3주간 방치, yozit 컨테이너도 같은 시기 Exited). memo-service가 24h 무heartbeat 노드를
       Slack으로 알리도록 요청함 (minione 소유). 리포터가 죽으면 리포트가 안 오는 순환 구조를 끊는 게 목적
