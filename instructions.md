@@ -1,6 +1,6 @@
 # Copilot CLI Instructions
 
-> Revision: 12
+> Revision: 13
 
 ## 응답
 - 한국어, 반말, 짧고 캐주얼
@@ -23,7 +23,19 @@
 - `.env` 내용 출력 금지
 - 서버 작업 시 Tailscale hostname 사용 (IP X)
 - git commit: conventional commits (feat/fix/chore)
-- GitHub 접근 불가 시 `gh auth switch` 시도
+- GitHub 계정이 둘(`paryoja`, `yj0604park`)이고, `yj0604park` 전용 private repo에
+  접근하려면 **환경변수 두 개를 빼야** 한다. `gh auth switch`는 `GH_TOKEN`이 설정돼
+  있으면 무시되므로 소용없음:
+  - `GH_TOKEN` = paryoja 토큰. 항상 keyring보다 우선함
+  - `GIT_CONFIG_PARAMETERS` = Copilot 세션이 `credential.helper=copilot`을 강제 주입
+  ```bash
+  env -u GH_TOKEN gh repo view yj0604park/<repo>
+  env -u GIT_CONFIG_PARAMETERS -u GH_TOKEN git fetch   # push/clone도 동일
+  ```
+  `GH_TOKEN=` 처럼 빈 값 대입은 안 먹히니 반드시 `env -u`.
+  증상은 인증 오류가 아니라 `Repository not found` (404)라서 오진하기 쉬움.
+  같은 이유로 앱의 `create_session`/`create_project`도 이런 repo에선 workspace
+  초기화가 실패한다 → 그런 repo 작업은 세션 위임하지 말고 직접 처리할 것.
 - **현재 작업과 무관한 버그/이슈를 발견하면** 즉시 수정하지 말고 메모로 기록:
   `POST /memos` (또는 MCP `create_memo`) → folder=`inbox`, title=`bug: <한줄>`,
   content에 재현 경로/관련 파일/추정 원인. 나중에 별도 작업으로 처리.
