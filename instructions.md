@@ -1,6 +1,6 @@
 # Copilot CLI Instructions
 
-> Revision: 11
+> Revision: 12
 
 ## 응답
 - 한국어, 반말, 짧고 캐주얼
@@ -129,7 +129,9 @@ Memos). 사용자에게 현황 보여줄 때 URL 공유 가능. announcement 행
 
 ## Daily Status Report (머신별)
 - 모든 머신은 매일 23:00 (로컬) 자기 헬스 리포트를 Slack DM `C0AFD7AQ4QK`에 보낸다
-- 셋업 확인: `crontab -l | grep -iE "system-health|status-report"` 로 해당 라인 있는지
-- 셋업 안 됐고 사용자가 원하면 → `setup-status-report.md` 참고해서 셋업
-- 셋업 후 `servers/{hostname}.md`의 "운영 메모" 섹션에 한 줄 기록 (`status report: cron 23:00, scripts/...`)
-- 참고: raspberrypi는 이미 셋업됨 (`scripts/system-health.py` + cron `0 23`)
+- 셋업 확인: macOS `launchctl print "gui/$(id -u)/com.paryoja.system-health"`,
+  Linux `crontab -l | grep -iE "system-health|status-report"`
+- 셋업 안 됐고 사용자가 원하면 → `scripts/setup-status-report.sh` 실행 (자세한 건 `setup-status-report.md`)
+- 셋업 후 `servers/{hostname}.md`의 "운영 메모" 섹션에 한 줄 기록
+- 스크립트는 `scripts/system-health.py` 하나로 macOS/Linux/Synology 공용
+  (`system-health-macos.py`는 구 LaunchAgent 호환용 shim)

@@ -1,7 +1,7 @@
 # Daily Status Report — 셋업 가이드
 
 > 각 머신이 매일 23:00 (로컬 시간) 자기 헬스 리포트를 Slack DM(`C0AFD7AQ4QK`)에 보내도록 셋업.
-> raspberrypi엔 이미 `scripts/system-health.py` + cron으로 운영 중. 다른 머신은 이 가이드 따라 셋업.
+> `scripts/system-health.py` 는 macOS/Linux/Synology 공용. 배선은 `scripts/setup-status-report.sh` 가 자동으로 한다.
 
 ## 보낼 정보 (공통 섹션)
 
@@ -107,40 +107,44 @@ SSH key가 없으면 먼저 `ssh-copy-id` 또는 Tailscale SSH 활성화.
 
 ## 셋업 단계 (체크리스트)
 
-새 머신에서 copilot이 첫 세션에 다음을 수행:
+`scripts/system-health.py` 는 **OS 자동 감지 포터블 스크립트**다 (macOS / Linux /
+Synology DSM). 머신별 포팅 필요 없음. 배선도 `scripts/setup-status-report.sh` 가
+자동으로 한다 (macOS=LaunchAgent, Linux=cron).
 
 1. **셋업 여부 확인**
    ```bash
+   # Linux
    crontab -l | grep -iE "system-health|status-report" || echo "NOT_SETUP"
+   # macOS
+   launchctl print "gui/$(id -u)/com.paryoja.system-health" >/dev/null 2>&1 || echo "NOT_SETUP"
    ```
 2. 미셋업이면 사용자에게 셋업 동의 요청
-3. **레퍼런스 복사**
-   - raspberrypi의 `scripts/system-health.py`를 새 머신 환경에 맞게 포팅
-   - 또는 단일 portable script 작성 (`scripts/system-health-portable.py` — 향후 작업)
-4. **토큰 파일 생성** ([[Secret 전달]] 섹션 참고 — agent에게 paste 금지)
+3. **토큰 파일 생성** (아래 [Secret 전달] 섹션 참고 — agent에게 paste 금지)
    ```bash
-   mkdir -p ~/.config/system-health && chmod 700 ~/.config/system-health
-   # raspberrypi에서 SCP 또는 직접 nano로 입력
+   ssh <설정된-머신> 'cat ~/.config/system-health/env' \
+     | (umask 077 && mkdir -p ~/.config/system-health && cat > ~/.config/system-health/env)
+   chmod 600 ~/.config/system-health/env
    ```
-5. **수동 테스트**
+4. **배선**
    ```bash
-   python3 scripts/system-health.py --dry-run  # 메시지 출력만
+   scripts/setup-status-report.sh          # 기본 23:00
+   HEALTH_HOUR=7 scripts/setup-status-report.sh   # 시각 변경
+   ```
+   내부에서 dry-run 검증 후 LaunchAgent/cron 을 등록한다 (idempotent).
+5. **수동 발송 확인**
+   ```bash
+   python3 scripts/system-health.py --dry-run  # 출력만
    python3 scripts/system-health.py            # 실제 발송
    ```
-6. **cron 등록 (로컬 23:00)**
-   ```cron
-   0 23 * * * /usr/bin/python3 /path/to/scripts/system-health.py >> /tmp/system-health.log 2>&1
-   ```
-7. **운영 기록**
-   - `copilot-instructions/servers/{hostname}.md`의 운영 메모 섹션에 한 줄 추가:
+6. **운영 기록**
+   - `copilot-instructions/servers/{hostname}.md`의 운영 메모에 한 줄 추가:
      ```
-     - status report: cron 0 23, scripts/system-health.py → Slack DM
+     - status report: LaunchAgent(또는 cron) 23:00, scripts/system-health.py → Slack DM
      ```
-8. commit + push
+7. commit + push
 
 ## 잠재 follow-up
 
-- `scripts/system-health-portable.py` — OS 자동 감지로 한 스크립트가 Linux/macOS/Synology 다 지원
 - 발송 채널을 `flush-pending-alerts` 패턴으로 통일 (각 머신이 SSH로 raspberrypi의 `pending-alerts/`에 drop)
   - 장점: 토큰을 raspberrypi 한 곳에만
   - 단점: SSH key + Tailscale 의존

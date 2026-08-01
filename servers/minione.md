@@ -36,6 +36,7 @@
 
 ## 운영 메모
 - status report: LaunchAgent `~/Library/LaunchAgents/com.paryoja.system-health.plist`, 매일 23:00, `scripts/system-health-macos.py` → Slack DM `C0AFD7AQ4QK`
+  - `system-health-macos.py`는 이제 포터블 `scripts/system-health.py`로 넘기는 shim. 재배선하려면 `scripts/setup-status-report.sh`
   - 토큰: `~/.config/system-health/env` (chmod 600)
   - 로그: `/tmp/system-health.log`
   - 수동 테스트: `python3 scripts/system-health-macos.py --dry-run`

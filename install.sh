@@ -1,9 +1,27 @@
 #!/usr/bin/env bash
 # Dotfiles & Copilot CLI 셋업 — macOS / Debian-family (Raspberry Pi 포함)
+#
+#   install.sh            데스크톱 셋업 (GUI 앱/폰트 포함)
+#   install.sh --server   서버 셋업 (cask/GUI/폰트 제외, CLI + dotfile만)
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OS="$(uname -s)"
+SERVER_MODE="${SERVER_MODE:-0}"
+
+for arg in "$@"; do
+  case "$arg" in
+    --server) SERVER_MODE=1 ;;
+    -h|--help)
+      sed -n '2,5p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+      exit 0
+      ;;
+    *)
+      echo "알 수 없는 인자: $arg (사용법: $0 [--server])" >&2
+      exit 1
+      ;;
+  esac
+done
 
 log()  { printf "\033[1;34m▶\033[0m %s\n" "$*"; }
 ok()   { printf "\033[1;32m✓\033[0m %s\n" "$*"; }
@@ -11,6 +29,10 @@ warn() { printf "\033[1;33m!\033[0m %s\n" "$*"; }
 err()  { printf "\033[1;31m✗\033[0m %s\n" "$*" >&2; }
 
 have() { command -v "$1" >/dev/null 2>&1; }
+
+if [[ "$SERVER_MODE" == "1" ]]; then
+  log "server 모드: GUI 앱(cask)/폰트 설치 skip"
+fi
 
 # ─────────────────────────────────────────────
 # 1) OS / 패키지 매니저 감지
@@ -63,8 +85,18 @@ install_pkg() {
 
 if [[ "$PM" == "brew" ]]; then
   if [[ -f "$REPO_DIR/Brewfile" ]]; then
-    log "Brewfile로 패키지 설치 중..."
-    brew bundle --file="$REPO_DIR/Brewfile" || warn "brew bundle 일부 실패 (계속 진행)"
+    if [[ "$SERVER_MODE" == "1" ]]; then
+      # cask(GUI 앱/폰트)와 그 전용 tap 을 뺀 임시 Brewfile 로 설치.
+      # 별도 Brewfile.server 를 두면 두 파일이 갈라지므로 필터링 방식을 쓴다.
+      SERVER_BREWFILE="$(mktemp -t Brewfile.server)"
+      grep -Ev '^[[:space:]]*(cask|tap)[[:space:]]' "$REPO_DIR/Brewfile" > "$SERVER_BREWFILE"
+      log "Brewfile(cask 제외)로 패키지 설치 중..."
+      brew bundle --file="$SERVER_BREWFILE" || warn "brew bundle 일부 실패 (계속 진행)"
+      rm -f "$SERVER_BREWFILE"
+    else
+      log "Brewfile로 패키지 설치 중..."
+      brew bundle --file="$REPO_DIR/Brewfile" || warn "brew bundle 일부 실패 (계속 진행)"
+    fi
   else
     install_pkg zsh tmux jq fzf zsh-autosuggestions zsh-completions starship zoxide atuin gh node
   fi
@@ -216,6 +248,8 @@ SSH_DIR="$HOME/.ssh"
 mkdir -p "$SSH_DIR"
 chmod 700 "$SSH_DIR"
 INC_LINE="Include $REPO_DIR/ssh/config"
+# 아래 ok/warn 메시지의 "~/.ssh/..." 는 표시용 문자열이지 경로 확장 대상이 아니다.
+# shellcheck disable=SC2088
 if [[ ! -f "$SSH_DIR/config" ]]; then
   printf '%s\n' "$INC_LINE" > "$SSH_DIR/config"
   ok "~/.ssh/config 생성 + Include 추가"
@@ -321,6 +355,10 @@ echo
 echo "다음 단계:"
 echo "  1. 새 zsh 세션 시작:  exec zsh   (또는 재로그인)"
 echo "  2. Copilot CLI 재시작 (hooks 적용)"
-echo "  3. 터미널 폰트를 Nerd Font 로 변경 (선택, starship 아이콘 표시용)"
-echo "     - 추천: MesloLGS NF / JetBrainsMono Nerd Font / FiraCode Nerd Font"
-echo "     - https://www.nerdfonts.com/"
+if [[ "$SERVER_MODE" != "1" ]]; then
+  echo "  3. 터미널 폰트를 Nerd Font 로 변경 (선택, starship 아이콘 표시용)"
+  echo "     - 추천: MesloLGS NF / JetBrainsMono Nerd Font / FiraCode Nerd Font"
+  echo "     - https://www.nerdfonts.com/"
+else
+  echo "  3. daily status report: scripts/setup-status-report.sh (미셋업이면)"
+fi

@@ -75,7 +75,9 @@ echo
 echo "── Nerd Font 확인 ──"
 if fc-list 2>/dev/null | grep -qi "nerd\|meslo.*nf\|jetbrains.*nf\|fira.*nf"; then
   ok "Nerd Font 감지됨"
-elif [[ -d "$HOME/Library/Fonts" ]] && ls "$HOME/Library/Fonts" 2>/dev/null | grep -qi "nerd\|meslo.*nf\|jetbrains.*nf\|fira.*nf"; then
+elif [[ -d "$HOME/Library/Fonts" ]] && \
+     { compgen -G "$HOME/Library/Fonts/*[Nn]erd*" >/dev/null 2>&1 || \
+       compgen -G "$HOME/Library/Fonts/*NF*" >/dev/null 2>&1; }; then
   ok "Nerd Font 감지됨 (~/Library/Fonts)"
 elif [[ ! -t 1 ]] || [[ -z "${DISPLAY:-}${WAYLAND_DISPLAY:-}" && "$(uname)" != "Darwin" ]]; then
   ok "Nerd Font (headless 환경, skip)"
