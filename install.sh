@@ -297,7 +297,8 @@ fi
 # ─────────────────────────────────────────────
 echo
 log "검증:"
-bash "$REPO_DIR/check-symlinks.sh"
+# set -e 상태라 실패가 install stamp(8단계)까지 막지 않도록 명시적으로 흡수한다.
+bash "$REPO_DIR/check-symlinks.sh" || warn "symlink 검증에 실패 항목 있음 (위 출력 확인)"
 
 # ─────────────────────────────────────────────
 # 8) install stamp (적용 완료 커밋 기록)

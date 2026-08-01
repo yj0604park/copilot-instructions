@@ -26,16 +26,17 @@ for f in "${FILES[@]}"; do
     target=$(readlink "$f")
     if [[ "$target" == *"$REPO_DIR"* ]] || [[ "$target" == *"copilot-instructions"* ]]; then
       echo "✅ $f → $target"
+      ((OK++))
     else
       echo "⚠️  $f → $target (unexpected target)"
       ((NG++))
     fi
-    ((OK++))
   elif [ -f "$f" ]; then
     echo "❌ $f (regular file, not symlink)"
     ((NG++))
   else
-    echo "⏭️  $f (not found)"
+    echo "❌ $f (not found)"
+    ((NG++))
   fi
 done
 

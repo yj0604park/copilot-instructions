@@ -23,6 +23,9 @@
 - `~/Workspace/copilot-instructions/` — dotfiles/instructions repo
 
 ## 운영 메모
+- copilot-supervisor: user LaunchAgent 2개 — `com.paryoja.copilot-supervisor-server`(control plane, FastAPI+SQLite), `com.paryoja.copilot-supervisor-runner`(polling runner → Copilot CLI 실행). 둘 다 `RunAtLoad`+`KeepAlive` 상시. repo `~/Workspace/copilot-supervisor`, 실행 스크립트 `scripts/svc-{server,runner}.sh`, 로그 `~/Library/Logs/com.paryoja.copilot-supervisor-{server,runner}.log`
+- auto-pull: user LaunchAgent `com.paryoja.copilot-autopull`, `StartInterval 3600`, `scripts/auto-pull.sh` (install.sh가 자동 배선). 로그 `~/.local/state/copilot/auto-pull.log`. clean+behind+ahead=0 인 repo만 ff-merge
+- status report: **미셋업**. `setup-status-report.md` 참고해서 `scripts/system-health-macos.py` + LaunchAgent 23:00 으로 붙이면 됨 (minione 구성이 레퍼런스)
 - homelab-node-agent: user LaunchAgent `com.paryoja.homelab-node-agent` (gui domain, sudo 불필요), config `~/homelab-node-agent/node-agent.json`, interval 300s, Memo `/nodes` heartbeat. 로그 `~/Library/Logs/homelab-node-agent.{log,err}`
   - **실행 방식: `--once` + `StartInterval 300` (주기 실행)**. launchd가 5분마다 fresh 프로세스 spawn → 코드/config 변경 자동 반영, 재시작 불필요. (구: `--loop`+`KeepAlive` 장기 프로세스였는데 코드 바뀔 때마다 수동 재시작 필요해서 전환)
   - plist `EnvironmentVariables.PATH`에 `/Applications/Tailscale.app/Contents/MacOS`(tailscale CLI=GUI앱 바이너리) 등 포함해야 tailscale_name FQDN 수집됨. docker는 미설치.
