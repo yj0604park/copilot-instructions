@@ -20,6 +20,7 @@
 | Finance Docs | 9000 | — |
 | memo-service | 8100 | memo.paryoja.com |
 | People App | 3001 | — |
+| my-dashboard | 3010 | — (Tailscale 전용) |
 | Focalboard | 8000 | focalboard.paryoja.com |
 | Gitea | 3000 (+2222 ssh) | gitea.paryoja.com |
 | Drone CI | — | — |
@@ -29,6 +30,8 @@
 ## 프로젝트 경로
 - `~/homelab/` — 인프라 monorepo
 - `~/projects/apps/finance-main/` — Finance (submodules: backend, frontend-v2)
+- `~/projects/apps/my-dashboard/` — 개인 뉴스/메일 대시보드
+- `~/projects/repos/` — bare git repo 호스팅 (GitHub 원격 없는 로컬 프로젝트 push 용)
 
 ## GitHub 계정
 - `yj0604park` (finance-main, infra)
@@ -45,3 +48,9 @@
   - checkout: `~/projects/apps/homelab-node-agent`, config: `node-agent.json` (gitignore)
   - repo 기본 `install-launchd.sh`는 sudo LaunchDaemon이지만 minione은 user LaunchAgent로 설치(관례)
   - 로그: `/tmp/homelab-node-agent.err`
+- my-dashboard (개인 뉴스 다이제스트): user LaunchAgent `~/Library/LaunchAgents/com.paryoja.my-dashboard.plist`, `npm run start` (PORT=3010, HOSTNAME=0.0.0.0)
+  - 접근: `http://minione.tail591527.ts.net:3010` — Gmail 받은편지함이 노출되므로 traefik/도메인에 붙이지 말 것
+  - 코드 전달: bookone에서 `git push minione master:main` → bare repo `~/projects/repos/my-dashboard.git`
+  - 업데이트: `cd ~/projects/apps/my-dashboard && git pull && npm ci && npm run build && launchctl kickstart -k gui/$(id -u)/com.paryoja.my-dashboard`
+  - DB는 `data/` (gitignore, 서버 로컬), 설정은 `config/config.json` (앱이 직접 수정하므로 pull 시 충돌 주의)
+  - 로그: `/tmp/my-dashboard.log`, `/tmp/my-dashboard.err`
