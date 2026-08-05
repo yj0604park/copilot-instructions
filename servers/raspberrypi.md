@@ -25,15 +25,39 @@
 - `~/.openclaw/workspace/projects/` — Instagram 등 서브 프로젝트
 
 ## GitHub 계정
-- 활성: `yj0604park` (기본)
-- 추가 로그인: `diehardclaw99-creator` (이 워크스페이스 repo 소유 — `clo-automations`)
-- repo 접근 불가 시 `gh auth switch`
+- **활성: `diehardclaw99-creator`** (이 워크스페이스 repo 소유 — `clo-automations`)
+- 추가 로그인: `yj0604park` (`copilot-instructions` 등 소유, Active account: false)
+- **`gh auth switch`는 쓰지 말 것.** 전역 활성 계정이 바뀌어 `clo-automations` 쪽
+  자동화가 깨진다. repo별로 계정을 고정하는 게 맞다 (아래).
+- **private repo가 `Repository not found`(404)로 막히는 함정** (2026-08-05):
+  `~/.gitconfig`에 **URL별** helper가 걸려 있다 —
+  `credential.https://github.com.helper = !/usr/bin/gh auth git-credential`.
+  이건 항상 *활성* 계정(diehardclaw99-creator) 토큰을 돌려주므로 yj0604park 소유
+  private repo는 404가 된다. URL별 설정은 일반 `credential.helper`보다 우선하니
+  `git -c credential.helper=...`도 `GIT_ASKPASS`도 **전부 무시된다** (토큰 자체는
+  멀쩡한데 git이 안 쓰는 것이라 원인 찾기 까다롭다).
+  해법은 해당 repo의 **로컬** config에 계정을 고정하는 것. 빈 값을 먼저 넣어
+  앞선 helper 체인을 리셋해야 한다:
+  ```bash
+  git config --local --replace-all 'credential.https://github.com.helper' ''
+  git config --local --add 'credential.https://github.com.helper' \
+    '!f() { echo username=x-access-token; echo "password=$(/usr/bin/gh auth token -u yj0604park)"; }; f'
+  ```
+  `copilot-instructions`에는 이미 적용해뒀다.
+
+## 접속
+- **SSH 사용자는 `diehard`** (`ssh diehard@raspberrypi`). `paryoja`/`yoonjaepark`는
+  publickey 거부됨. 홈은 `/home/diehard`, repo는
+  `/home/diehard/.openclaw/workspace/copilot-instructions`.
 
 ## 도메인 패턴
 - `*.tail591527.ts.net` — Tailscale 내부 (`raspberrypi.tail591527.ts.net`)
 
 ## 운영 메모
 - Docker 도입 시 `docker-ce` apt 설치 필요
+- `~/.profile` L29가 없는 `~/.atuin/bin/env`를 source해서 로그인 셸마다 에러를 뱉는다
+  (`bash -lc` 쓸 때 stderr에 섞임). 동작엔 지장 없지만 출력 파싱 시 방해됨. atuin
+  미설치 상태이므로 해당 줄 제거 또는 존재 확인 가드 필요.
 - SSH 원격 작업 시 PATH: `/usr/local/bin:/usr/bin` (기본으로 충분)
 - status report: cron `0 23`, `scripts/system-health.py` → Slack DM `C0AFD7AQ4QK` (이미 셋업). 스크립트는 repo의 포터블 버전으로 통합됨 (배선 갱신: `scripts/setup-status-report.sh`)
 - node heartbeat: `homelab-node-agent.service` (systemd, **User=diehard**, enabled) → Memo `/nodes` 5분 주기. repo `~/homelab-node-agent`, config `node-agent.json`. git_repos 리포트(workspace/copilot-instructions/homelab-node-agent 절대경로). root로 돌리면 `~`가 /root라 git_repos 깨짐 → 반드시 User=diehard
