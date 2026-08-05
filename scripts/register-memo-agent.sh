@@ -69,6 +69,26 @@ latest_link="$state_dir/memo-agent.env"
 activity_file="$state_dir/act-${instance_id}"
 mkdir -p "$state_dir"
 
+# Drop state left by sessions that are long gone. Each session gets its own env
+# and pid file, and the desktop app opens a new session whenever an old one ages
+# out, so without this they accumulate indefinitely (253 env files had piled up
+# by the time this was added). Only touch files older than a week, and only pid
+# files whose daemon is actually dead, so a merely idle session is never
+# disturbed. Best-effort: never fail registration over cleanup.
+_gc_state() {
+  find "$state_dir" -maxdepth 1 -name 'memo-agent-*.env' -mtime +7 -delete 2>/dev/null || true
+  find "$state_dir" -maxdepth 1 -name 'act-*' -mtime +7 -delete 2>/dev/null || true
+  local f pid
+  for f in "$state_dir"/hb-*.pid; do
+    [[ -f "$f" ]] || continue
+    pid="$(cat "$f" 2>/dev/null || true)"
+    if [[ -z "$pid" ]] || ! kill -0 "$pid" 2>/dev/null; then
+      rm -f "$f" 2>/dev/null || true
+    fi
+  done
+}
+_gc_state || true
+
 # Reuse uuid8 from this instance's existing env file if host matches
 existing_name=""
 if [[ -f "$state_file" ]]; then
