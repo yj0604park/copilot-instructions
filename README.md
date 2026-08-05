@@ -95,6 +95,15 @@ git pull
 # 새 hook이나 dotfile이 추가됐으면 install.sh 다시 실행
 ```
 
+> **`git pull`만으로는 새 symlink가 안 생긴다.** auto-pull이 도는 노드는 파일은 최신인데
+> 배선은 마지막 `install.sh` 시점에 멈춰 있어서, 새로 추가된 hook이 조용히 누락된다.
+> 2026-08-04에 raspberrypi/yozit에서 `hooks/scripts/{session-start,heartbeat}.sh` 심링크가
+> 없는 걸 발견했는데, `notification.json`은 두 hook을 참조하고 있어서 호출될 때마다
+> 실패하고 있었다(에러는 아무 데도 안 뜬다).
+>
+> 점검은 `./check-symlinks.sh`, 노드 전체는 memo-service `/nodes`의
+> `git_repos[].install_pending`(= `.git/installed-commit` stamp와 HEAD 불일치)으로 볼 수 있다.
+
 ## 수정 후 적용 방법
 
 | 파일 | 적용 방법 |

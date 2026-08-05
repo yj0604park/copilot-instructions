@@ -52,6 +52,19 @@
 - 유저 `crontab` 없음, sudo는 비번 필요 → 스케줄 작업은 Docker(restart 정책)로.
 
 ## 운영 메모
+- **스케줄링은 DSM GUI에서만 가능**: DSM에는 `crontab(1)` 바이너리가 없고, `/etc/crontab`은
+  root 소유 + DSM이 덮어쓰며, `sudo`는 비밀번호를 요구해서 SSH 비대화형으로는 배선할 수 없다.
+  제어판 → 작업 스케줄러 → 생성 → 예약된 작업 → 사용자 정의 스크립트 (사용자 `paryoja`).
+  그래서 다른 노드에는 있는 아래 둘이 yozit에만 없다 (2026-08-04 기준 **미등록, 수동 등록 필요**):
+  - auto-pull (매시 정각):
+    `/bin/bash /volume1/homes/paryoja/copilot-instructions/scripts/auto-pull.sh`
+  - status report (매일 23:00):
+    `/usr/bin/python3 /volume1/homes/paryoja/copilot-instructions/scripts/system-health.py >> /tmp/system-health.log 2>&1`
+  - 둘 다 수동 실행은 검증됨(auto-pull 실제 pull 성공, health는 `--dry-run` OK).
+    Slack 토큰 `~/.config/system-health/env`도 복사 완료 — **Synology ACL이 umask를 무시하므로
+    복사 후 반드시 `chmod 600`** (그냥 두면 777로 생긴다).
+- **git이 기본 PATH 밖**: `/usr/local/bin/git`. SSH 비대화형에서 `git`은 command not found.
+  `auto-pull.sh`는 이 경로를 자체 탐색하므로 그냥 실행하면 된다.
 - **Copilot CLI 장시간 세션 금지**: yozit에서 tmux로 Copilot 세션을 계속 띄워두지 말 것.
   필요할 때 다른 머신에서 SSH로 붙는다. 근거: 2026-08-01에 먹통 세션 하나(`R` 상태 busy loop)가
   36시간 동안 CPU time 17시간을 태우며 2코어 중 절반을 상시 점유, `which <defunct>` 좀비도 누적.
