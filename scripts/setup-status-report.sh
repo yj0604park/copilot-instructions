@@ -4,6 +4,9 @@
 #   macOS : user LaunchAgent com.paryoja.system-health (StartCalendarInterval)
 #   Linux : crontab entry tagged "# copilot-status-report"
 #
+# Synology (DSM) has no crontab(1) — the script prints GUI Task Scheduler
+# instructions and exits 1 rather than half-wiring anything.
+#
 # Idempotent. Requires the Slack token at ~/.config/system-health/env
 # (SLACK_BOT_TOKEN + HEALTH_CHANNEL) — see setup-status-report.md for how to
 # copy it from an already-configured machine.
@@ -76,6 +79,15 @@ PLISTEOF
     ;;
   Linux)
     LINE="$MINUTE $HOUR * * * $PY $SCRIPT >> /tmp/system-health.log 2>&1 # copilot-status-report"
+    if ! command -v crontab >/dev/null 2>&1; then
+      # Synology DSM ships no crontab(1): /etc/crontab is root-owned and DSM
+      # rewrites it, so the supported path is the GUI Task Scheduler.
+      err "crontab 없음 — Synology(DSM)로 보임. GUI로 등록해야 한다:"
+      err "  제어판 → 작업 스케줄러 → 생성 → 예약된 작업 → 사용자 정의 스크립트"
+      err "  사용자: $(id -un) / 매일 $HOUR:$(printf '%02d' "$MINUTE")"
+      err "  명령: $PY $SCRIPT >> /tmp/system-health.log 2>&1"
+      exit 1
+    fi
     CUR="$(crontab -l 2>/dev/null || true)"
     if printf '%s\n' "$CUR" | grep -qF "copilot-status-report"; then
       NEW="$(printf '%s\n' "$CUR" | grep -vF "copilot-status-report")"
