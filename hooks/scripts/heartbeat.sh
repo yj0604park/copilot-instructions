@@ -11,7 +11,10 @@
 set -u
 
 INPUT=$(cat 2>/dev/null || true)
-SID=$(printf '%s' "$INPUT" | jq -r '.sessionId // empty' 2>/dev/null)
+# snake_case is what the hook payload actually uses; camelCase is accepted as a
+# fallback. This was reading only .sessionId, so SID was always empty and the
+# per-session env file was never found by name.
+SID=$(printf '%s' "$INPUT" | jq -r '.session_id // .sessionId // empty' 2>/dev/null)
 
 state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/copilot"
 envf=""

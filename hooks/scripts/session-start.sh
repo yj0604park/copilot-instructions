@@ -10,7 +10,11 @@
 set -u
 
 INPUT=$(cat 2>/dev/null || true)
-SID=$(printf '%s' "$INPUT" | jq -r '.sessionId // empty' 2>/dev/null || true)
+# The payload uses snake_case (session_id). Accept camelCase too in case the
+# schema differs by version -- reading the wrong key silently yields an empty id
+# and sends registration down its tty+ppid fallback, which mints a new agent
+# every time instead of refreshing this session's.
+SID=$(printf '%s' "$INPUT" | jq -r '.session_id // .sessionId // empty' 2>/dev/null || true)
 [[ -n "${SID:-}" ]] && export COPILOT_AGENT_INSTANCE="$SID"
 
 repo_dir="$(dirname "$(readlink -f "$HOME/.copilot/copilot-instructions.md")")"
