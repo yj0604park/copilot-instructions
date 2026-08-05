@@ -1,6 +1,6 @@
 # Copilot CLI Instructions
 
-> Revision: 15
+> Revision: 16
 
 ## 응답
 - 한국어, 반말, 짧고 캐주얼
@@ -117,6 +117,25 @@
 - 장시간 작업/대기 전: `POST /agents/$MEMO_AGENT_NAME/heartbeat` (MCP `heartbeat`).
 - 정상 종료 시 가능하면 `DELETE /agents/$MEMO_AGENT_NAME` (MCP `stop_agent`). 강제 종료/
   네트워크 drop은 timeout으로만 정리됨. shell trap 등으로 best-effort 호출 권장.
+- 유령 에이전트가 쌓이면 `scripts/prune-memo-agents.sh` (기본 dry-run, `--apply`로 삭제).
+  단 **online 상태로 쌓이는 중이면 prune은 대증요법**이다. 죽은 세션 대신 뭔가가
+  heartbeat를 치고 있다는 뜻이므로 원인을 봐야 한다 (아래).
+- **데스크톱 앱의 세션 ↔ 프로세스 모델 주의** (2026-08-05, 유령 168개 사고):
+  - 앱은 모든 세션의 도구 호출을 **공용 `copilot --server --stdio` 프로세스 하나**
+    아래에서 실행한다. 부모 체인을 거슬러 "copilot" 프로세스를 찾으면 세션별
+    프로세스가 아니라 이 공용 서버가 잡힌다. 이건 앱이 살아있는 한 안 죽으므로
+    **세션 수명의 프록시로 쓸 수 없다.** 과거 heartbeat 데몬이 이걸 `kill -0`으로
+    감시해서 죽은 세션 몫으로 영원히 heartbeat를 쳤고, 161개가 누적돼
+    **stale 감지가 통째로 무력화**됐다 (죽은 세션이 전부 online으로 보임).
+  - 세션 수명 판단은 **활동 기록 기반**으로 한다. agentStop hook이 매 턴
+    `act-{instance}` 파일을 touch하고, 데몬은 그 mtime이 `MEMO_HB_IDLE_EXIT_SEC`
+    (기본 30분) 넘게 안 바뀌면 스스로 종료한다.
+  - **hook은 `COPILOT_AGENT_SESSION_ID`를 물려받지 못한다.** 도구 호출 환경엔 있지만
+    hook 환경엔 없어서, 전달 안 하면 `not-a-tty-<PPID>` fallback을 타고 호출마다
+    새 에이전트가 생긴다(85개 누적). hook은 stdin JSON의 `.sessionId`를
+    `COPILOT_AGENT_INSTANCE`로 export해서 넘길 것.
+  - 데몬 kill 후 즉시 안 죽는 건 정상이다. `sleep 300` 중이면 bash가 trap을
+    sleep 종료 후 처리하므로 최대 5분 걸린다.
 
 ### Inter-agent workflow
 

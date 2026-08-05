@@ -24,6 +24,10 @@ fi
 register() {
   local repo
   repo="$(dirname "$(readlink -f "$HOME/.copilot/copilot-instructions.md" 2>/dev/null)" 2>/dev/null)"
+  # Forward the session id: hooks don't inherit COPILOT_AGENT_SESSION_ID, and
+  # without it the script falls back to a tty+ppid instance id that differs on
+  # every call, registering a new agent each time instead of refreshing this one.
+  [[ -n "${SID:-}" ]] && export COPILOT_AGENT_INSTANCE="$SID"
   [[ -x "$repo/scripts/register-memo-agent.sh" ]] && \
     "$repo/scripts/register-memo-agent.sh" >/dev/null 2>&1 || true
 }
@@ -39,6 +43,17 @@ source "$envf" 2>/dev/null || true
 url="${MEMO_SERVICE_URL:-https://memo.paryoja.com}"
 name="${MEMO_AGENT_NAME:-}"
 [[ -z "$name" ]] && { register; exit 0; }
+
+# Mark the session as active. The heartbeat daemon polls this file's mtime and
+# exits once it goes stale, which is how it learns the session ended -- it has no
+# session-scoped process to watch (all sessions share one `copilot --server`).
+act="${MEMO_AGENT_ACTIVITY_FILE:-}"
+if [[ -n "$act" ]]; then
+  touch "$act" 2>/dev/null || true
+else
+  # Older env file predating the activity mechanism; re-register to add it.
+  register
+fi
 
 code=$(curl -fsS -m 5 -o /dev/null -w '%{http_code}' \
   -X POST -H 'Content-Type: application/json' -d '{}' \
