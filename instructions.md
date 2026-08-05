@@ -1,6 +1,6 @@
 # Copilot CLI Instructions
 
-> Revision: 16
+> Revision: 17
 
 ## 응답
 - 한국어, 반말, 짧고 캐주얼
@@ -132,8 +132,13 @@
     (기본 30분) 넘게 안 바뀌면 스스로 종료한다.
   - **hook은 `COPILOT_AGENT_SESSION_ID`를 물려받지 못한다.** 도구 호출 환경엔 있지만
     hook 환경엔 없어서, 전달 안 하면 `not-a-tty-<PPID>` fallback을 타고 호출마다
-    새 에이전트가 생긴다(85개 누적). hook은 stdin JSON의 `.sessionId`를
+    새 에이전트가 생긴다(85개 누적). hook은 stdin JSON에서 세션 id를 읽어
     `COPILOT_AGENT_INSTANCE`로 export해서 넘길 것.
+  - **payload 키는 `session_id` (snake_case)다.** `sessionId`로 읽으면 항상 빈 값이
+    나오는데 아무 에러도 안 난다 — 그냥 조용히 fallback을 타서 유령이 계속
+    생긴다. 실제 payload 예:
+    `{"hook_event_name":"SessionStart","session_id":"...","cwd":"...","source":"resume"}`.
+    스키마가 의심되면 `INPUT`을 파일로 덤프해서 눈으로 확인할 것 (추측 금지).
   - 데몬 kill 후 즉시 안 죽는 건 정상이다. `sleep 300` 중이면 bash가 trap을
     sleep 종료 후 처리하므로 최대 5분 걸린다.
 
