@@ -83,7 +83,22 @@
   outbound tailnet TCP만 전부 막히는** 헷갈리는 증상이 된다 (yozit → minione:8100/:22, memo.paryoja.com
   모두 실패). 그 결과 `/nodes` heartbeat가 조용히 끊긴다(08-05~08-13 offline이었다).
   - 점검: `ls -l /dev/net/tun; lsmod | grep -w tun; ifconfig tailscale0`
-  - 복구(root 필요, sudo가 비번을 요구하므로 콘솔/DSM에서):
+  - **✅ 영속화 완료 (2026-08-13): `yozit-tun.service`** — DSM 작업 스케줄러(GUI) 대신 systemd로 해결했다.
+    DSM7엔 `/etc/rc.local`이 없고 `/usr/local/etc/rc.d`도 systemd에서 참조되지 않아 둘 다 안 먹는다.
+    유닛 원본은 이 repo의 `servers/yozit-tun.service`. `Before=pkgctl-Tailscale.service`라서
+    패키지가 뜨기 전에 `/dev/net/tun`이 만들어지고, 그래서 **`synopkg restart`가 필요 없다**
+    (start-stop-status가 처음부터 `--tun=userspace-networking`을 생략).
+    설치는 SSH에서 sudo 없이 docker로 root를 얻어서 한다(유닛을 `/tmp`에 쓴 뒤):
+    ```
+    docker run --rm --privileged --pid=host -v /:/host alpine sh -c \
+      "cp /host/tmp/yozit-tun.service /host/etc/systemd/system/ && chmod 644 /host/etc/systemd/system/yozit-tun.service \
+       && chroot /host systemctl daemon-reload && chroot /host systemctl enable yozit-tun.service"
+    ```
+    검증(디바이스를 지웠다 재생성 확인. tailscaled는 이미 연 fd를 쓰므로 영향 없음):
+    `rm -f /dev/net/tun && systemctl restart yozit-tun.service && ls -l /dev/net/tun`
+    - **DSM 업데이트로 시스템 파티션이 덮이면 유닛이 사라질 수 있다.** 업데이트 후엔
+      `systemctl is-enabled yozit-tun.service`를 확인하고 없으면 위 명령으로 재설치.
+  - 수동 복구(유닛이 없거나 이미 부팅이 끝난 상태에서):
     `insmod /lib/modules/tun.ko && mkdir -p /dev/net && mknod /dev/net/tun c 10 200 && chmod 0666 /dev/net/tun && synopkg restart Tailscale`
   - **`chmod 0666`이 핵심**이다. mknod만 하면 `crw-------`(root 전용)라 non-root로 도는 tailscaled가
     tun을 못 잡고 계속 userspace로 뜬다. 재부팅 시 `/dev/net/tun`이 이미 있으면 `mknod`는
