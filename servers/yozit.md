@@ -52,14 +52,19 @@
 - 유저 `crontab` 없음, sudo는 비번 필요 → 스케줄 작업은 Docker(restart 정책)로.
 
 ## 운영 메모
-- **2026-08-12 sshd 장애 (재부팅으로 해소)**: 08-12 17:00경부터 **모든 출발지**(bookone/minione/raspberrypi,
-  LAN·tailnet 무관)에서 TCP accept 직후 배너 전에 연결이 끊겼다
-  (`kex_exchange_identification: Connection reset`). 전 출발지가 동일했으니 **DSM 자동차단(IP별)이 아니다.**
-  DSM 웹(:5000/:5001)·pihole DNS(:53)는 멀쩡해서 **이름 해석엔 영향이 없었고**, raspberrypi의
-  `sync-secondary-dns.sh` cron(*/15)만 100회 연속 실패했다. 08-13 18:00 **재부팅으로 복구**.
-  재부팅 후 `/` 67%, `/volume1` 40%, mem 13GB free로 **디스크·메모리 여유는 정상** — 근본 원인은 미상.
-  같은 증상 재발 시 SSH가 막혀 원격 복구가 불가하므로 DSM 웹으로 직접 붙을 것
-  (`http://100.101.180.8:5000`. `nas.paryoja.com`은 minitwo traefik 경유라 minitwo가 죽으면 같이 죽는다).
+- **2026-08-12 sshd 장애 = PID 고갈이었다 (원인 규명 완료, 08-13)**: 08-12 17:00경부터 **모든 출발지**
+  (bookone/minione/raspberrypi, LAN·tailnet 무관)에서 TCP accept 직후 배너 전에 연결이 끊겼다
+  (`kex_exchange_identification: Connection reset`). 전 출발지가 동일했으니 DSM 자동차단(IP별)이 아니다.
+  디스크·메모리는 정상이라 당시엔 "원인 미상"으로 남겼는데, **커널 로그에 답이 있었다**:
+  `run out of pids, pid_max = 32768`이 **08-12 14:57부터 08-13 17:49까지 110,319줄**.
+  sshd는 접속마다 자식을 fork하므로 PID가 없으면 accept 직후 죽는다 = 위 증상 그대로.
+  DSM 웹/DNS가 살아 보였던 건 이미 떠 있던 프로세스라 fork가 필요 없었기 때문.
+  범인은 homelab-node-agent의 좀비 누적(아래 `init: true` 항목). 08-13 17:49 전원 하드 리셋으로 복구.
+  - **교훈: "특정 서비스만 이상"할 때 `dmesg | grep -i "run out of pids"`와 `ps -eo stat | grep -c ^Z`를
+    먼저 볼 것.** fork가 필요한 것(sshd·cron·docker exec)만 죽고 상주 데몬은 멀쩡해서
+    개별 서비스 장애로 오진하기 쉽다.
+  - 같은 증상 재발 시 SSH가 막혀 원격 복구가 불가하므로 DSM 웹으로 직접 붙을 것
+    (`http://100.101.180.8:5000`. `nas.paryoja.com`은 minitwo traefik 경유라 minitwo가 죽으면 같이 죽는다).
 - **⚠️ tailnet에서 caddy vhost를 확인할 땐 `:8443` + 정확한 SNI**: 표의 "8443→443"은 공유기 포워딩 기준이라
   tailnet에서 `https://media.paryoja.com`(=:443)로 찌르면 아무것도 안 뜬다. `-H Host:`로 IP에 붙어도
   caddy에 IP용 인증서가 없어 `tlsv1 alert internal error`가 난다. 이 둘을 **caddy 다운으로 오진하기 쉽다**
@@ -78,6 +83,15 @@
   - 점검: `ls -l /dev/net/tun; lsmod | grep -w tun; ifconfig tailscale0`
   - 복구(root 필요, sudo가 비번을 요구하므로 DSM 작업 스케줄러에서):
     `insmod /lib/modules/tun.ko && mkdir -p /dev/net && mknod /dev/net/tun c 10 200 && chmod 0666 /dev/net/tun && synopkg restart Tailscale`
+  - **SSH에서 즉시 root가 필요할 땐 docker로 우회**(paryoja가 docker 그룹이라 가능). 2026-08-13 검증:
+    `docker run --rm --privileged --pid=host --network=host -v /:/host alpine chroot /host /usr/syno/bin/synopkg start Tailscale`
+    (non-root로 `synopkg start`하면 `failed to lock packages` code 275). 읽기 전용 조회에도 유용:
+    `docker run --rm -v /var/log:/hl:ro alpine tail -c 8000 /hl/kern.log.1`
+  - **userspace로 떨어졌는지 판별**: `grep -c netstack /var/packages/Tailscale/var/tailscaled.stdout.log`.
+    userspace 모드에선 tailnet 클라의 :53 질의가 `netstack: UDP session between 127.0.0.1:x and
+    127.0.0.1:53 timed out`으로 죽는다 = **tailnet DNS 전멸**. tun 모드면 netstack 로그가 아예 없다.
+  - 실제로 `esynoscheduler.db`에 태스크가 **0개**라 부팅 트리거는 여태 미등록이었다(2026-08-13 확인).
+    확인법: `docker run --rm -v /usr/syno/etc/esynoscheduler:/e:ro alpine strings /e/esynoscheduler.db`
 - **스케줄링은 DSM GUI에서만 가능**: DSM에는 `crontab(1)` 바이너리가 없고, `/etc/crontab`은
   root 소유 + DSM이 덮어쓰며, `sudo`는 비밀번호를 요구해서 SSH 비대화형으로는 배선할 수 없다.
   제어판 → 작업 스케줄러 → 생성 → 예약된 작업 → 사용자 정의 스크립트 (사용자 `paryoja`).
@@ -100,6 +114,20 @@
   (`memo_service_url=http://10.0.0.144:8100` LAN 직접 — **이 주소는 죽었다**, 아래 참조). 로그 `docker logs homelab-node-agent`.
   git_repos fetch(cf4e008+): compose에 `gh`+`~/.config/gh` 마운트 & 각 repo `.git` rw 마운트.
   코드 갱신 `git pull` 후 **`docker restart homelab-node-agent`**(--loop이라 필수).
+  - **`init: true` 필수** (2026-08-13 PID 고갈로 NAS 전체 먹통 → 하드 리셋 사고).
+    git_repos fetch가 부르는 `git`이 손자 프로세스를 남기는데, 컨테이너 PID1이 python이라
+    reap을 안 해 좀비가 영구 누적된다(15분에 30개). 좀비도 PID를 점유 →
+    `run out of pids, pid_max = 32768` (커널 로그 110,319줄, 8/12 14:57 ~ 8/13 17:49) →
+    fork 불가로 DSM/SSH/**Pi-hole까지 정지 → tailnet DNS(100.101.180.8) 전멸 = "인터넷이 끊긴" 증상**.
+    복구는 전원 하드 리셋뿐이었고 btrfs `start tree-log replay`로 비정상 종료가 확인된다.
+    compose에 `init: true` → `/sbin/docker-init`(tini)가 PID1이 되어 reap. 검증: `ps -eo stat | grep -c ^Z`.
+  - **비정상 종료 판별법**: `dmesg | grep "tree-log replay"`,
+    `syno-check-normal-shutdown.service` 소요시간(정상 ~95ms / 비정상 4s+),
+    `/var/log/synopoweroff.log` mtime이 이번 부팅 전이면 graceful shutdown 아님.
+    **크래시 직전 커널 로그는 `/var/log/kern.log.1`** (부팅 시 rotate). paryoja는 log 그룹이 아니라
+    권한이 없으니 docker로 우회: `docker run --rm -v /var/log:/hl:ro alpine tail -c 8000 /hl/kern.log.1`.
+    크래시 시각은 `docker exec pihole grep -n "started, version" /var/log/pihole/pihole.log`의
+    앞줄(마지막 DNS 쿼리)로 초 단위 특정 가능.
   - **`unless-stopped`는 재부팅으로 부활하지 않는다** (2026-08-01 3주 무음 정지 원인).
     2026-07-10 재부팅 5분 전 컨테이너가 명시적으로 stop됐고(exit 137, `OOMKilled=false`,
     로그에 에러 한 줄 없음), docker는 "수동 정지"를 재부팅 후에도 존중해서 영영 안 올라왔다.
