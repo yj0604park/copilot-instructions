@@ -31,4 +31,11 @@
 - `~/workspace2/home-dashboard/` — 대시보드 서비스
 
 ## 운영 메모
+- **traefik이 `*.paryoja.com` 전체의 SPOF**: `*.paryoja.com` DNS가 minitwo의 tailscale IP(100.110.176.76)를
+  가리키므로 **minitwo가 오프라인이면 도메인 전부 죽는다** (실제 백엔드가 다른 노드에서 멀쩡히 돌아도).
+  2026-08-13 minitwo가 tailnet에서 사라져 nas/memo/btc-carry 등 전부 다운. 이때 DSM 등 개별 서비스는
+  **노드 IP:포트로 직접** 우회할 것 (예: `http://100.101.180.8:5000`).
+  - traefik이 502를 주면 traefik은 살아있고 **백엔드가 없는 것** — 대상 노드의 컨테이너를 확인한다.
+    (`ssh minitwo 'curl -sk -o /dev/null -w "%{http_code}" https://localhost/ -H "Host: <도메인>"'`으로
+    프록시/백엔드 구분 가능)
 - memo-service health report: cron `0 23`, `~/workspace2/memo-service/scripts/system-health.py` → Slack DM

@@ -8,7 +8,21 @@
 - **Tailscale**: minione.tail591527.ts.net
 
 ## Docker
-- **런타임**: Docker Desktop
+- **런타임**: Docker Desktop. 아래 표의 서비스는 **전부 `desktop-linux` 컨텍스트**에 있다.
+- **⚠️ 도커 런타임이 두 개 깔려 있다 (OrbStack + Docker Desktop)** — 2026-08-13 오진의 원인.
+  `docker context ls`의 기본값이 **`orbstack`**이라 그냥 `docker ps` 하면 **실서비스가 하나도 안 보이고**
+  "컨테이너·볼륨·DB가 통째로 사라진" 것처럼 보인다. 실제로 memo-service를 "데이터 유실"로 오판했다가
+  `docker --context desktop-linux ps`에서 멀쩡히 발견. **minione에서 컨테이너를 찾을 땐 반드시
+  `--context desktop-linux`를 붙이거나 `docker context use desktop-linux` 먼저 할 것.**
+  - 판별 팁: `docker volume ls`에 `database_pg_data`·`monitoring_*`만 보이고 `memo-service_*`가 없으면
+    OrbStack 쪽을 보고 있는 것이다.
+  - OrbStack 쪽은 minitwo 이전(2026-05) 전의 **잔재**다. 마지막 실행 5/24(`~/.orbstack/log/vmgr.1.log`),
+    compose 원본 `~/projects/infra/*`는 이미 비어 있고, monitoring/uptime-kuma/service-portal/traefik은
+    minitwo로 이관됨. gitea/drone/postgres-db/focalboard는 Docker Desktop과 **이름·포트가 겹치는 구버전**이라
+    OrbStack을 켜면 중복 기동으로 포트를 뺏는다. → **OrbStack 삭제 예정**(정리되면 이 항목도 지울 것).
+- **VM이 멈추면 전 서비스가 조용히 죽는다**: 2026-08-11 23:13 Docker Desktop VM 정지 → memo-service 포함
+  전부 다운, 8/13까지 아무도 몰랐다. 증상은 memo.paryoja.com **502**(traefik은 정상, 백엔드 부재).
+  복구는 `ssh minione 'open -a Docker'` 후 1분 대기. 정지 원인은 미상.
 
 ## 서비스 (Docker)
 | 서비스 | 포트 | 도메인 |
@@ -44,6 +58,10 @@
   - 로그: `/tmp/system-health.log`
   - 수동 테스트: `python3 scripts/system-health-macos.py --dry-run`
   - macOS는 cron에 Full Disk Access 권한 이슈가 있어 launchd 사용
+- **postgres 백업은 배선돼 있지 않다**: `~/homelab/minione/database/`에 `backup.sh`(pg_dumpall)/`run-backup.sh`/
+  `sync-backup.sh`가 있지만 `pg-backup`은 compose profile로만 걸려 있어 스케줄이 없고, `backups/` 디렉터리는
+  비어 있으며 `sync-backup.sh`도 `SYNC_METHOD=none`이다. 공용 postgres에 memo/gitea/drone/focalboard가
+  전부 얹혀 있으므로 **실질 무백업 상태**. (2026-08-13 확인)
 - homelab-node-agent: user LaunchAgent `~/Library/LaunchAgents/com.paryoja.homelab-node-agent.plist`, 5분 loop → memo-service `/nodes` heartbeat
   - checkout: `~/projects/apps/homelab-node-agent`, config: `node-agent.json` (gitignore)
   - repo 기본 `install-launchd.sh`는 sudo LaunchDaemon이지만 minione은 user LaunchAgent로 설치(관례)

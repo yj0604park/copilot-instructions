@@ -52,6 +52,20 @@
 - 유저 `crontab` 없음, sudo는 비번 필요 → 스케줄 작업은 Docker(restart 정책)로.
 
 ## 운영 메모
+- **🔴 2026-08-12~ 진행중: sshd 다운.** 08-12 17:00경부터 **모든 출발지**(bookone/minione/raspberrypi,
+  LAN·tailnet 무관)에서 TCP accept 직후 배너 전에 연결이 끊긴다(`kex_exchange_identification: Connection reset`).
+  전 출발지가 동일하니 **DSM 자동차단(IP별)이 아니다** — sshd 자체 이상.
+  - 같이 죽은 것: caddy(`:443`/`:8443` 무응답) → media/browser/docs/files-s3.paryoja.com 전멸.
+  - 살아있는 것: pihole DNS(:53)·web(:8080), DSM(:5000/:5001, webapi 정상 응답). **이름 해석엔 영향 없음.**
+  - 영향: raspberrypi의 `sync-secondary-dns.sh` cron(*/15)이 100회 연속 실패 → secondary pihole의
+    로컬레코드가 08-12 시점에 stale 고정. node-agent heartbeat도 08-05 이후 끊김(아래 항목도 원인).
+  - **SSH가 막혀 원격 복구 불가.** DSM 웹 `http://100.101.180.8:5000`으로 **직접** 붙어서
+    (`nas.paryoja.com`은 minitwo traefik 경유라 minitwo가 죽으면 같이 죽는다) 제어판 → 터미널 & SNMP에서
+    SSH 재기동 + 저장공간/리소스 확인. 새 프로세스 fork만 실패하는 양상이라 **디스크 풀/메모리 고갈 의심**.
+- **memo 주소 `10.0.0.144`는 죽었다**: node-agent와 memo-mcp config가 아직 이 주소를 쓰는데 ping조차 안 된다
+  (minione의 현재 주소는 `192.168.50.160`, tailnet `minione.tail591527.ts.net`). 그래서 yozit만
+  `/nodes` heartbeat가 **2026-08-05 이후 offline**. SSH 복구되면 두 config를
+  `http://minione.tail591527.ts.net:8100`(또는 `https://memo.paryoja.com`)으로 고칠 것.
 - **스케줄링은 DSM GUI에서만 가능**: DSM에는 `crontab(1)` 바이너리가 없고, `/etc/crontab`은
   root 소유 + DSM이 덮어쓰며, `sudo`는 비밀번호를 요구해서 SSH 비대화형으로는 배선할 수 없다.
   제어판 → 작업 스케줄러 → 생성 → 예약된 작업 → 사용자 정의 스크립트 (사용자 `paryoja`).
@@ -71,7 +85,7 @@
   죽인 뒤 user CPU 30% → 4.4%. J4025 2코어라 프로세스 하나 꼬이면 머신 전체가 느려진다.
 - **homelab-node-agent**: Docker `~/docker/homelab-node-agent`(python:3.12-slim, `network_mode: host`,
   `/volume1` ro 마운트), `--loop` 5분 heartbeat. 체크아웃 `~/homelab-node-agent`, config `node-agent.json`
-  (`memo_service_url=http://10.0.0.144:8100` LAN 직접). 로그 `docker logs homelab-node-agent`.
+  (`memo_service_url=http://10.0.0.144:8100` LAN 직접 — **이 주소는 죽었다**, 아래 참조). 로그 `docker logs homelab-node-agent`.
   git_repos fetch(cf4e008+): compose에 `gh`+`~/.config/gh` 마운트 & 각 repo `.git` rw 마운트.
   코드 갱신 `git pull` 후 **`docker restart homelab-node-agent`**(--loop이라 필수).
   - **`unless-stopped`는 재부팅으로 부활하지 않는다** (2026-08-01 3주 무음 정지 원인).
@@ -88,7 +102,7 @@
   (`~/docker/memo-mcp-runner/Dockerfile`, python:3.12-slim + httpx/dotenv/mcp, `mcp_server.py`만).
   코드 원본 `~/docker/memo-mcp`(repo yj0604park/memo-service). copilot 등록:
   `~/.copilot/mcp-config.json` 서버 "memo" = `docker run -i --rm --network host memo-mcp:local`,
-  env `MEMO_SERVICE_URL=http://10.0.0.144:8100`(LAN) + `MEMO_AGENT_NAME=yozit`. mcp_server 갱신 시
+  env `MEMO_SERVICE_URL=http://10.0.0.144:8100`(LAN — **죽은 주소**, 아래 참조) + `MEMO_AGENT_NAME=yozit`. mcp_server 갱신 시
   `~/docker/memo-mcp` pull → `cp mcp_server.py ~/docker/memo-mcp-runner/ && docker build -t memo-mcp:local`.
 - **tmux**: static 바이너리 `~/bin/tmux`(3.6b), PATH는 `~/.profile`에 추가.
 - **docs-core**: repo `paryojavive/docs-core`, origin은 https(gh 토큰 pull; 구 deploy key
