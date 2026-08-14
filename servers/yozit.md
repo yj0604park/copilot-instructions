@@ -52,20 +52,32 @@
 - 유저 `crontab` 없음, sudo는 비번 필요 → 스케줄 작업은 Docker(restart 정책)로.
 
 ## 운영 메모
-- **🔴 2026-08-12~ 진행중: sshd 다운.** 08-12 17:00경부터 **모든 출발지**(bookone/minione/raspberrypi,
-  LAN·tailnet 무관)에서 TCP accept 직후 배너 전에 연결이 끊긴다(`kex_exchange_identification: Connection reset`).
-  전 출발지가 동일하니 **DSM 자동차단(IP별)이 아니다** — sshd 자체 이상.
-  - 같이 죽은 것: caddy(`:443`/`:8443` 무응답) → media/browser/docs/files-s3.paryoja.com 전멸.
-  - 살아있는 것: pihole DNS(:53)·web(:8080), DSM(:5000/:5001, webapi 정상 응답). **이름 해석엔 영향 없음.**
-  - 영향: raspberrypi의 `sync-secondary-dns.sh` cron(*/15)이 100회 연속 실패 → secondary pihole의
-    로컬레코드가 08-12 시점에 stale 고정. node-agent heartbeat도 08-05 이후 끊김(아래 항목도 원인).
-  - **SSH가 막혀 원격 복구 불가.** DSM 웹 `http://100.101.180.8:5000`으로 **직접** 붙어서
-    (`nas.paryoja.com`은 minitwo traefik 경유라 minitwo가 죽으면 같이 죽는다) 제어판 → 터미널 & SNMP에서
-    SSH 재기동 + 저장공간/리소스 확인. 새 프로세스 fork만 실패하는 양상이라 **디스크 풀/메모리 고갈 의심**.
-- **memo 주소 `10.0.0.144`는 죽었다**: node-agent와 memo-mcp config가 아직 이 주소를 쓰는데 ping조차 안 된다
-  (minione의 현재 주소는 `192.168.50.160`, tailnet `minione.tail591527.ts.net`). 그래서 yozit만
-  `/nodes` heartbeat가 **2026-08-05 이후 offline**. SSH 복구되면 두 config를
-  `http://minione.tail591527.ts.net:8100`(또는 `https://memo.paryoja.com`)으로 고칠 것.
+- **2026-08-12 sshd 장애 (재부팅으로 해소)**: 08-12 17:00경부터 **모든 출발지**(bookone/minione/raspberrypi,
+  LAN·tailnet 무관)에서 TCP accept 직후 배너 전에 연결이 끊겼다
+  (`kex_exchange_identification: Connection reset`). 전 출발지가 동일했으니 **DSM 자동차단(IP별)이 아니다.**
+  DSM 웹(:5000/:5001)·pihole DNS(:53)는 멀쩡해서 **이름 해석엔 영향이 없었고**, raspberrypi의
+  `sync-secondary-dns.sh` cron(*/15)만 100회 연속 실패했다. 08-13 18:00 **재부팅으로 복구**.
+  재부팅 후 `/` 67%, `/volume1` 40%, mem 13GB free로 **디스크·메모리 여유는 정상** — 근본 원인은 미상.
+  같은 증상 재발 시 SSH가 막혀 원격 복구가 불가하므로 DSM 웹으로 직접 붙을 것
+  (`http://100.101.180.8:5000`. `nas.paryoja.com`은 minitwo traefik 경유라 minitwo가 죽으면 같이 죽는다).
+- **⚠️ tailnet에서 caddy vhost를 확인할 땐 `:8443` + 정확한 SNI**: 표의 "8443→443"은 공유기 포워딩 기준이라
+  tailnet에서 `https://media.paryoja.com`(=:443)로 찌르면 아무것도 안 뜬다. `-H Host:`로 IP에 붙어도
+  caddy에 IP용 인증서가 없어 `tlsv1 alert internal error`가 난다. 이 둘을 **caddy 다운으로 오진하기 쉽다**
+  (2026-08-13 실제로 오진). 올바른 확인:
+  `curl --resolve media.paryoja.com:8443:100.101.180.8 https://media.paryoja.com:8443/`
+- **memo 주소 `10.0.0.144`는 죽었다**: node-agent와 memo-mcp config가 아직 이 주소를 쓰는데
+  yozit에서 `No route to host`가 난다 (minione의 현재 주소는 `192.168.50.160`,
+  tailnet `100.108.193.108`). **단 주소만 고쳐선 안 낫는다** — 아래 tun 항목이 함께 깨져 있으면
+  tailnet outbound 자체가 막혀서 어떤 주소를 넣어도 실패한다. 순서는 tun 복구 → 주소 수정
+  (`http://100.108.193.108:8100`) → `docker restart homelab-node-agent`.
+- **🔴 재부팅 후 tun 모드 복구를 반드시 확인할 것** (2026-08-13 재부팅에서 실패 확인):
+  부팅 트리거 태스크가 안 돌아 `/dev/net/tun` 없음 / `tun.ko` 미로드 / `tailscale0` 없음 상태였다.
+  이때 tailscaled는 userspace-networking으로 뜨는데, **inbound(SSH·DNS·caddy)는 멀쩡하고
+  outbound tailnet TCP만 전부 막히는** 헷갈리는 증상이 된다 (yozit → minione:8100/:22, memo.paryoja.com
+  모두 실패). 그 결과 `/nodes` heartbeat가 조용히 끊긴다.
+  - 점검: `ls -l /dev/net/tun; lsmod | grep -w tun; ifconfig tailscale0`
+  - 복구(root 필요, sudo가 비번을 요구하므로 DSM 작업 스케줄러에서):
+    `insmod /lib/modules/tun.ko && mkdir -p /dev/net && mknod /dev/net/tun c 10 200 && chmod 0666 /dev/net/tun && synopkg restart Tailscale`
 - **스케줄링은 DSM GUI에서만 가능**: DSM에는 `crontab(1)` 바이너리가 없고, `/etc/crontab`은
   root 소유 + DSM이 덮어쓰며, `sudo`는 비밀번호를 요구해서 SSH 비대화형으로는 배선할 수 없다.
   제어판 → 작업 스케줄러 → 생성 → 예약된 작업 → 사용자 정의 스크립트 (사용자 `paryoja`).
