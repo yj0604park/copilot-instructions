@@ -1,6 +1,6 @@
 # Daily Status Report — 셋업 가이드
 
-> 각 머신이 매일 23:00 (로컬 시간) 자기 헬스 리포트를 Slack DM(`C0AFD7AQ4QK`)에 보내도록 셋업.
+> 각 머신이 매일 23:00 (로컬 시간) 자기 헬스 리포트를 Slack DM(`C0AFWQ4CV08`)에 보내도록 셋업.
 > `scripts/system-health.py` 는 macOS/Linux/Synology 공용. 배선은 `scripts/setup-status-report.sh` 가 자동으로 한다.
 
 ## 보낼 정보 (공통 섹션)
@@ -62,7 +62,7 @@ def post(token, channel, text):
 토큰 위치: `~/.config/system-health/env` (`chmod 600`)
 ```
 SLACK_BOT_TOKEN=xoxb-...
-HEALTH_CHANNEL=C0AFD7AQ4QK
+HEALTH_CHANNEL=C0AFWQ4CV08
 ```
 
 > 같은 bot 토큰을 여러 머신에서 공유. 일반 가정 셋업에선 OK. 토큰 분리는 추후.

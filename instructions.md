@@ -169,7 +169,11 @@
 Memos). 사용자에게 현황 보여줄 때 URL 공유 가능. announcement 행에서 답글 inline 확장.
 
 ## Daily Status Report (머신별)
-- 모든 머신은 매일 23:00 (로컬) 자기 헬스 리포트를 Slack DM `C0AFD7AQ4QK`에 보낸다
+- 모든 머신은 매일 23:00 (로컬) 자기 헬스 리포트를 Slack 채널 `C0AFWQ4CV08`에 보낸다
+  (2026-08-13 `C0AFD7AQ4QK`에서 이전. **bookone만 아직 구 채널**)
+- 채널은 `~/.config/system-health/env`의 `HEALTH_CHANNEL`로 정한다. 단 raspberrypi는
+  openclaw workspace의 자체 스크립트 사본을 쓰고 env 파일이 없어서 **crontab 라인에
+  `HEALTH_CHANNEL=...`을 앞에 붙여** 넘긴다 (스크립트 하드코딩 기본값을 덮어씀)
 - 셋업 확인: macOS `launchctl print "gui/$(id -u)/com.paryoja.system-health"`,
   Linux `crontab -l | grep -iE "system-health|status-report"`
 - 셋업 안 됐고 사용자가 원하면 → `scripts/setup-status-report.sh` 실행 (자세한 건 `setup-status-report.md`)

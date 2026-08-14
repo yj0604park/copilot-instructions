@@ -59,7 +59,12 @@
   (`bash -lc` 쓸 때 stderr에 섞임). 동작엔 지장 없지만 출력 파싱 시 방해됨. atuin
   미설치 상태이므로 해당 줄 제거 또는 존재 확인 가드 필요.
 - SSH 원격 작업 시 PATH: `/usr/local/bin:/usr/bin` (기본으로 충분)
-- status report: cron `0 23`, `scripts/system-health.py` → Slack DM `C0AFD7AQ4QK` (이미 셋업). 스크립트는 repo의 포터블 버전으로 통합됨 (배선 갱신: `scripts/setup-status-report.sh`)
+- status report: cron `0 23`, `scripts/system-health.py` → Slack `C0AFWQ4CV08` (이미 셋업).
+  **다른 머신과 달리 `~/.config/system-health/env`가 없다** — openclaw workspace의 자체 사본
+  (`~/.openclaw/workspace/scripts/system-health.py`)을 쓰고 채널 기본값이 하드코딩돼 있어서,
+  crontab 라인 앞에 `HEALTH_CHANNEL=...`을 붙여 덮어쓴다 (repo 파일을 고치면 그쪽 git과 드리프트).
+  또 직접 post 하지 않고 `~/.openclaw/workspace/pending-alerts/`에 큐잉 → flusher가 전송한다.
+  스크립트는 repo의 포터블 버전으로 통합됨 (배선 갱신: `scripts/setup-status-report.sh`)
 - node heartbeat: `homelab-node-agent.service` (systemd, **User=diehard**, enabled) → Memo `/nodes` 5분 주기. repo `~/homelab-node-agent`, config `node-agent.json`. git_repos 리포트(workspace/copilot-instructions/homelab-node-agent 절대경로). root로 돌리면 `~`가 /root라 git_repos 깨짐 → 반드시 User=diehard
 - cron 자동화 리포팅: node-agent `cron_jobs` 콜렉터(minione 구현)로 metadata.cron_jobs에 잡별 신선도(log mtime)+ok+last_error 표시. config에 10개 등록(flush/slack-inbox/youtube/disk-cookie/daily5/weekly). `cron_error_log`=memory/cron-errors.jsonl. ※ market 잡은 weekday+TZ 가드라 로그 MISSING 시 오탐 → 제외
 - gallery: yozit media server로 기능 마이그레이션 완료 (`gallery.service`는 6/30 중지+disable, 이 머신에선 미운영)
