@@ -70,19 +70,24 @@
   caddy에 IP용 인증서가 없어 `tlsv1 alert internal error`가 난다. 이 둘을 **caddy 다운으로 오진하기 쉽다**
   (2026-08-13 실제로 오진). 올바른 확인:
   `curl --resolve media.paryoja.com:8443:100.101.180.8 https://media.paryoja.com:8443/`
-- **memo 주소 `10.0.0.144`는 죽었다**: node-agent와 memo-mcp config가 아직 이 주소를 쓰는데
-  yozit에서 `No route to host`가 난다 (minione의 현재 주소는 `192.168.50.160`,
-  tailnet `100.108.193.108`). **단 주소만 고쳐선 안 낫는다** — 아래 tun 항목이 함께 깨져 있으면
-  tailnet outbound 자체가 막혀서 어떤 주소를 넣어도 실패한다. 순서는 tun 복구 → 주소 수정
-  (`http://100.108.193.108:8100`) → `docker restart homelab-node-agent`.
+- **memo 주소 `10.0.0.144`는 죽었다 → 2026-08-13 `http://100.108.193.108:8100`(minione tailnet)으로 수정 완료.**
+  minione의 현재 주소는 LAN `192.168.50.160` / tailnet `100.108.193.108`이고, 10.0.0.144는
+  `No route to host`가 난다. **주소만 고쳐선 안 낫는다** — 아래 tun 항목이 깨져 있으면 tailnet outbound
+  자체가 막혀 어떤 주소를 넣어도 실패한다. 순서는 tun 복구 → 주소 수정 → `docker restart homelab-node-agent`.
+  (백업 `~/homelab-node-agent/node-agent.json.bak-20260813`)
+  - `~/.copilot/mcp-config.json`은 현재 **`{"mcpServers": {}}` 빈 상태** — 아래 memo-mcp 항목의 등록이
+    실제로는 남아 있지 않다. 필요하면 재등록할 것.
 - **🔴 재부팅 후 tun 모드 복구를 반드시 확인할 것** (2026-08-13 재부팅에서 실패 확인):
   부팅 트리거 태스크가 안 돌아 `/dev/net/tun` 없음 / `tun.ko` 미로드 / `tailscale0` 없음 상태였다.
   이때 tailscaled는 userspace-networking으로 뜨는데, **inbound(SSH·DNS·caddy)는 멀쩡하고
   outbound tailnet TCP만 전부 막히는** 헷갈리는 증상이 된다 (yozit → minione:8100/:22, memo.paryoja.com
-  모두 실패). 그 결과 `/nodes` heartbeat가 조용히 끊긴다.
+  모두 실패). 그 결과 `/nodes` heartbeat가 조용히 끊긴다(08-05~08-13 offline이었다).
   - 점검: `ls -l /dev/net/tun; lsmod | grep -w tun; ifconfig tailscale0`
-  - 복구(root 필요, sudo가 비번을 요구하므로 DSM 작업 스케줄러에서):
+  - 복구(root 필요, sudo가 비번을 요구하므로 콘솔/DSM에서):
     `insmod /lib/modules/tun.ko && mkdir -p /dev/net && mknod /dev/net/tun c 10 200 && chmod 0666 /dev/net/tun && synopkg restart Tailscale`
+  - **`chmod 0666`이 핵심**이다. mknod만 하면 `crw-------`(root 전용)라 non-root로 도는 tailscaled가
+    tun을 못 잡고 계속 userspace로 뜬다. 재부팅 시 `/dev/net/tun`이 이미 있으면 `mknod`는
+    `File exists`로 실패하는데, 이때 chmod를 건너뛰기 쉬우니 주의.
   - **SSH에서 즉시 root가 필요할 땐 docker로 우회**(paryoja가 docker 그룹이라 가능). 2026-08-13 검증:
     `docker run --rm --privileged --pid=host --network=host -v /:/host alpine chroot /host /usr/syno/bin/synopkg start Tailscale`
     (non-root로 `synopkg start`하면 `failed to lock packages` code 275). 읽기 전용 조회에도 유용:

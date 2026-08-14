@@ -69,6 +69,16 @@
     여러 출발지에서 똑같이 배너 전에 끊기면 yozit sshd 이슈로 확정(→ `servers/yozit.md`).
     실패해도 **DNS 서비스 자체는 안 죽는다** — secondary가 마지막 성공 시점 레코드로 고정될 뿐이라 긴급도는 낮다.
     마지막 성공 시각은 `grep -n "no change\|updated" /tmp/dns-sync.log | tail -1`.
+  - **tailnet DNS는 yozit 단독 SPOF였다 → 2026-08-13 다중 nameserver로 해소.**
+    Tailscale의 global nameserver가 `100.101.180.8`(yozit) 하나뿐이라, secondary pihole이 멀쩡히
+    떠 있어도 **아무도 그걸 안 쓰는** 구조였다. 실제로 yozit tailscale을 끄자 rpi 자신도
+    `Temporary failure in name resolution`으로 cron이 줄줄이 죽었다(`/etc/resolv.conf`가
+    `100.100.100.100` MagicDNS → yozit). 현재는 admin console에 `100.101.180.8` → `100.79.4.18`
+    → `8.8.8.8` → `8.8.4.4` 순으로 등록돼 failover가 실제로 동작한다.
+    - 확인: `tailscale dns status`의 `Resolvers (in preference order)`
+    - nameserver는 **한 번에 하나씩** 추가하는 UI라 하나만 되는 것처럼 보이지만 여러 개 등록된다.
+    - 긴급 우회(노드 단위): `sudo tailscale set --accept-dns=false` 후 `/etc/resolv.conf`에
+      `nameserver 127.0.0.1`(자기 pihole). 복구되면 `--accept-dns=true`로 원복할 것.
 - btc-carry (페이퍼 트레이딩): `~/btc-carry-poc`, systemd 2개 (**User=diehard**, enabled)
   - `btc-carry-paper.service` — OKX public 시세로 델타뉴트럴 캐리 **가상매매**. 60초 폴링, SQLite `data/paper.db`
   - `btc-carry-web.service` — 읽기전용 대시보드 **https://btc-carry.paryoja.com** (minitwo traefik → raspberrypi:8787). 직접 접근은 `http://raspberrypi.tail591527.ts.net:8787` (0.0.0.0 바인딩, 인증 없음, 민감정보 없음)
