@@ -49,6 +49,28 @@
 - **SSH 사용자는 `diehard`** (`ssh diehard@raspberrypi`). `paryoja`/`yoonjaepark`는
   publickey 거부됨. 홈은 `/home/diehard`, repo는
   `/home/diehard/.openclaw/workspace/copilot-instructions`.
+- **🔑 tailnet이 죽었을 때의 유일한 우회로: `ssh -J minitwo diehard@192.168.50.192`**
+  (2026-08-15 실증). minitwo(`192.168.50.84`)가 rpi와 **같은 물리 LAN**에 있다.
+  - **`192.168.50.0/24`가 두 곳에 중복 존재한다는 게 함정.** bookone도 `192.168.50.195`를
+    받지만 그건 *다른 장소의 동일 사설대역*이라 rpi가 안 보인다. bookone에서 LAN 스캔하면
+    호스트 7개만 잡히고 rpi는 없어서 "rpi 다운"으로 오진하기 딱 좋다(실제로 오진함).
+    minione/yozit은 `10.0.0.x`라 중첩 NAT로 아예 격리.
+  - 판별: `ssh minitwo 'ping -c2 192.168.50.192'`가 1ms로 응답하면 rpi는 살아있는 것.
+- **🔴 tailscale 노드 키 만료 (2026-08-13 20:17 발생, 08-15 복구)**: 키가 만료되면
+  `tailscale status`에 **`Online: True`로 보이는데** ping·SSH·DNS가 전부 timeout이다
+  (`CurAddr` 빈 값, `LastHandshake` 없음 = 컨트롤 플레인만 붙어 있고 데이터플레인은 차단).
+  rpi 자체는 멀쩡해서 cron·Slack 알람은 계속 돌기 때문에 **"살아있는데 안 닿는" 모순**으로 보인다.
+  - 증상: `dns-sync` 알람이 15분마다 `ERROR: failed to read primary pihole.toml via
+    paryoja@100.101.180.8`로 도배(24h에 95건). yozit `auth.log`에 **rpi의 SSH 세션이 아예 없다**
+    (접속 실패가 아니라 시도조차 도달 못 함)는 게 결정적 단서.
+  - 확인: `tailscale status --json`의 해당 피어 `KeyExpiry`. 전 노드 만료일 일괄 확인 권장.
+  - 복구 ①(rpi 접근 없이): admin console → 노드 → **Disable key expiry**.
+    ②(위 ProxyJump로 붙어서): `sudo tailscale up --hostname=raspberrypi` → 출력된
+    `https://login.tailscale.com/a/...` URL을 브라우저에서 승인. `nohup ... &` 후
+    `/tmp/ts-up.log`를 읽으면 비대화형 SSH에서도 URL을 뽑을 수 있다.
+  - 복구 후 검증: `bash scripts/sync-secondary-dns.sh` → `no change`.
+    bookone의 `known_hosts`에 옛 키가 남아 `Host key verification failed`가 날 수 있으니
+    `ssh-keygen -R 100.79.4.18`.
 
 ## 도메인 패턴
 - `*.tail591527.ts.net` — Tailscale 내부 (`raspberrypi.tail591527.ts.net`)
