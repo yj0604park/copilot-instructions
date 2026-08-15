@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily system health report to Slack
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=paryoja
+Group=users
+Environment=HOME=/var/services/homes/paryoja
+ExecStart=/usr/bin/python3 /var/services/homes/paryoja/copilot-instructions/scripts/system-health.py

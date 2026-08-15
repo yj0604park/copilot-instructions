@@ -1,0 +1,10 @@
+[Unit]
+Description=copilot-instructions auto-pull
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=paryoja
+Group=users
+Environment=HOME=/var/services/homes/paryoja
+ExecStart=/bin/bash /var/services/homes/paryoja/copilot-instructions/scripts/auto-pull.sh

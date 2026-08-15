@@ -228,8 +228,13 @@ def init_failed() -> tuple[str, list[str]]:
             parts = line.split(None, 2)
             if len(parts) < 3:
                 continue
-            _pid, status, label = parts
+            pid, status, label = parts
             if status in ("0", "-"):
+                continue
+            # PID column is numeric while the job is running: `status` is then a
+            # stale exit code from a previous run (e.g. 143 on a restart), not a
+            # current failure.
+            if pid.isdigit():
                 continue
             if label.startswith(("com.apple.", "0x")):
                 continue

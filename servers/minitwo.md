@@ -39,3 +39,5 @@
     (`ssh minitwo 'curl -sk -o /dev/null -w "%{http_code}" https://localhost/ -H "Host: <도메인>"'`으로
     프록시/백엔드 구분 가능)
 - memo-service health report: cron `0 23`, `~/workspace2/memo-service/scripts/system-health.py` → Slack DM
+- 2026-08-15 노드 헬스 리포트(`com.paryoja.system-health`) LaunchAgent 등록 (매일 23:00).
+  `scripts/setup-status-report.sh`로 셋업. 위 memo-service 리포트와는 별개 (노드 헬스 vs 서비스 헬스).

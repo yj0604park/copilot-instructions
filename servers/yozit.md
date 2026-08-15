@@ -52,6 +52,15 @@
 - 유저 `crontab` 없음, sudo는 비번 필요 → 스케줄 작업은 Docker(restart 정책)로.
 
 ## 운영 메모
+- **자동 스케줄은 systemd 타이머로 등록한다 (2026-08-15)**: `scripts/setup-status-report.sh`는 Synology에서
+  GUI 안내 후 exit 1이라 못 쓴다. DSM 작업 스케줄러(`esynoscheduler.db`) 대신 systemd 유닛을 직접 깔았다.
+  - `copilot-autopull.timer` (매시) → `scripts/auto-pull.sh`
+  - `copilot-health.timer` (매일 23:00) → `scripts/system-health.py`
+  - 두 서비스 모두 `User=paryoja` / `Group=users` / `Environment=HOME=/var/services/homes/paryoja`.
+    HOME을 안 주면 `~/.config/system-health/env`(Slack 토큰)를 못 찾는다. python은 `/usr/bin/python3` (3.8.15).
+  - 설치는 `yozit-tun.service`와 동일하게 `/tmp`에 쓴 뒤 docker chroot로 복사+enable.
+    **DSM systemd는 구버전이라 `systemctl enable --now`가 없다** — `enable`과 `start`를 따로 호출할 것.
+  - 확인: `systemctl list-timers | grep copilot`
 - **2026-08-12 sshd 장애 = PID 고갈이었다 (원인 규명 완료, 08-13)**: 08-12 17:00경부터 **모든 출발지**
   (bookone/minione/raspberrypi, LAN·tailnet 무관)에서 TCP accept 직후 배너 전에 연결이 끊겼다
   (`kex_exchange_identification: Connection reset`). 전 출발지가 동일했으니 DSM 자동차단(IP별)이 아니다.
