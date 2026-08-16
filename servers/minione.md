@@ -52,6 +52,10 @@
 - repo 접근 불가 시 `gh auth switch` 시도
 
 ## 운영 메모
+- **의도적으로 꺼둔 컨테이너** (헬스 리포트에 "Exited"로 뜨지만 정상): `file-organizer-*`는 프로젝트 종료로
+  영구 중단. `people-*`(`~/projects/apps/people`)는 필요할 때만 켜는 온디맨드 — restart policy를 일부러
+  안 넣어서 재부팅하면 꺼진 채로 남는다. 켤 땐 `cd ~/projects/apps/people && docker compose up -d`
+  (app은 :3001).
 - status report: LaunchAgent `~/Library/LaunchAgents/com.paryoja.system-health.plist`, 매일 23:00, `scripts/system-health-macos.py` → Slack DM `C0AFWQ4CV08`
   - `system-health-macos.py`는 이제 포터블 `scripts/system-health.py`로 넘기는 shim. 재배선하려면 `scripts/setup-status-report.sh`
   - 토큰: `~/.config/system-health/env` (chmod 600)
