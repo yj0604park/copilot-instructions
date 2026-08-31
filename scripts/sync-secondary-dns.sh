@@ -18,12 +18,14 @@
 #   - docker access on both ends
 #
 # Env overrides:
-#   YOZIT_SSH     ssh target of primary          (default paryoja@100.101.180.8)
+#   YOZIT_SSH       ssh target of primary          (default paryoja@100.101.180.8)
+#   YOZIT_SSH_PORT  ssh port of primary            (default 10022)
 #   YOZIT_DOCKER  docker binary path on primary  (default /usr/local/bin/docker)
 #   PIHOLE_NAME   container name on both ends     (default pihole)
 set -euo pipefail
 
 YOZIT_SSH="${YOZIT_SSH:-paryoja@100.101.180.8}"
+YOZIT_SSH_PORT="${YOZIT_SSH_PORT:-10022}"
 YOZIT_DOCKER="${YOZIT_DOCKER:-/usr/local/bin/docker}"
 PIHOLE_NAME="${PIHOLE_NAME:-pihole}"
 
@@ -70,7 +72,7 @@ to_array_literal() {
 }
 
 # --- Pull primary's pihole.toml once ---
-if ! remote_toml="$(ssh -o ConnectTimeout=8 -o BatchMode=yes "$YOZIT_SSH" \
+if ! remote_toml="$(ssh -p "$YOZIT_SSH_PORT" -o ConnectTimeout=8 -o BatchMode=yes "$YOZIT_SSH" \
       "$YOZIT_DOCKER exec $PIHOLE_NAME cat /etc/pihole/pihole.toml" 2>/dev/null)"; then
   echo "ERROR: failed to read primary pihole.toml via $YOZIT_SSH" >&2
   exit 1
