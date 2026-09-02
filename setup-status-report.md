@@ -3,6 +3,20 @@
 > 각 머신이 매일 23:00 (로컬 시간) 자기 헬스 리포트를 Slack DM(`C0AFWQ4CV08`)에 보내도록 셋업.
 > `scripts/system-health.py` 는 macOS/Linux/Synology 공용. 배선은 `scripts/setup-status-report.sh` 가 자동으로 한다.
 
+## 운영 현황 (머신별)
+
+- 모든 머신은 매일 23:00 (로컬) 자기 헬스 리포트를 Slack 채널 `C0AFWQ4CV08`에 보낸다
+  (2026-08-13 `C0AFD7AQ4QK`에서 이전. **bookone만 아직 구 채널**)
+- 채널은 `~/.config/system-health/env`의 `HEALTH_CHANNEL`로 정한다. 단 raspberrypi는
+  openclaw workspace의 자체 스크립트 사본을 쓰고 env 파일이 없어서 **crontab 라인에
+  `HEALTH_CHANNEL=...`을 앞에 붙여** 넘긴다 (스크립트 하드코딩 기본값을 덮어씀)
+- 셋업 확인: macOS `launchctl print "gui/$(id -u)/com.paryoja.system-health"`,
+  Linux `crontab -l | grep -iE "system-health|status-report"`
+- 셋업 안 됐고 사용자가 원하면 → `scripts/setup-status-report.sh` 실행
+- 셋업 후 `servers/{hostname}.md`의 "운영 메모" 섹션에 한 줄 기록
+- 스크립트는 `scripts/system-health.py` 하나로 macOS/Linux/Synology 공용
+  (`system-health-macos.py`는 구 LaunchAgent 호환용 shim)
+
 ## 보낼 정보 (공통 섹션)
 
 | 섹션 | 값 | 임계값 (warn / crit) |
