@@ -5,7 +5,10 @@ INPUT=$(cat)
 
 FOLDER=$(echo "$INPUT" | jq -r '.cwd // empty' | xargs basename 2>/dev/null)
 FOLDER="${FOLDER:-unknown}"
-SESSION_ID=$(echo "$INPUT" | jq -r '.sessionId // empty')
+# The payload uses snake_case (session_id); camelCase is kept as a fallback in
+# case the schema differs by version. Reading only .sessionId made SESSION_ID
+# always empty, so the events file was never found and the summary never updated.
+SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // .sessionId // empty')
 COPILOT_HOME="${COPILOT_HOME:-$HOME/.copilot}"
 EVENTS_FILE="$COPILOT_HOME/session-state/$SESSION_ID/events.jsonl"
 

@@ -45,14 +45,17 @@ grep '"assistant.message"' ~/.copilot/session-state/{SESSION_ID}/events.jsonl \
 {
   "timestamp": 1778914021549,
   "cwd": "/Users/yoonjaepark/services",
-  "sessionId": "9d298a3f-...",
+  "session_id": "9d298a3f-...",
   "transcriptPath": "",       // 비어있을 수 있음!
   "stopReason": "end_turn"
 }
 ```
 
-- `transcriptPath`는 빈 문자열일 수 있으므로 `sessionId`로 직접 경로 구성
-- 경로: `~/.copilot/session-state/{sessionId}/events.jsonl`
+- 키는 **snake_case (`session_id`)**다. `sessionId`로 읽으면 에러 없이 빈 값이
+  나와서 조용히 fallback을 탄다. 스크립트는 `.session_id // .sessionId // empty`로
+  읽어 버전에 따라 스키마가 다를 경우의 camelCase도 함께 받는다.
+- `transcriptPath`는 빈 문자열일 수 있으므로 `session_id`로 직접 경로 구성
+- 경로: `~/.copilot/session-state/{session_id}/events.jsonl`
 
 ## 4. 흔한 문제
 
