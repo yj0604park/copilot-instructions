@@ -34,6 +34,7 @@
 | Finance Docs | 9000 | — |
 | memo-service | 8100 | memo.paryoja.com |
 | People App | 3001 | — |
+| 마주침 (Encounters) | 3002 | encounters.paryoja.com |
 | my-dashboard | 3010 | news.paryoja.com |
 | Focalboard | 8000 | focalboard.paryoja.com |
 | Gitea | 3000 (+2222 ssh) | gitea.paryoja.com |
@@ -56,6 +57,9 @@
   영구 중단. `people-*`(`~/projects/apps/people`)는 필요할 때만 켜는 온디맨드 — restart policy를 일부러
   안 넣어서 재부팅하면 꺼진 채로 남는다. 켤 땐 `cd ~/projects/apps/people && docker compose up -d`
   (app은 :3001).
+- 마주침: `~/projects/apps/encounters`, LaunchAgent `com.paryoja.encounters`가 `0.0.0.0:3002`에서 실행.
+  minitwo Traefik이 `http://minione.tail591527.ts.net:3002`로 연결하고
+  `https://encounters.paryoja.com`으로 제공한다.
 - status report: LaunchAgent `~/Library/LaunchAgents/com.paryoja.system-health.plist`, 매일 23:00, `scripts/system-health-macos.py` → Slack DM `C0AFWQ4CV08`
   - `system-health-macos.py`는 이제 포터블 `scripts/system-health.py`로 넘기는 shim. 재배선하려면 `scripts/setup-status-report.sh`
   - 토큰: `~/.config/system-health/env` (chmod 600)
