@@ -9,3 +9,7 @@ id_*
 *_ecdsa
 known_hosts
 ssh/config.local
+
+# Python
+__pycache__/
+*.pyc
