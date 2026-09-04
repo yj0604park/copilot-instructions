@@ -15,6 +15,14 @@ log_msg() {
   printf '%s %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$*" >>"$log"
 }
 
+# yozit (Synology) keeps git off the default PATH.
+GIT="$(command -v git 2>/dev/null || true)"
+[[ -z "$GIT" && -x /usr/local/bin/git ]] && GIT=/usr/local/bin/git
+if [[ -z "$GIT" ]]; then
+  log_msg "skip: git not found (PATH=$PATH)"
+  exit 0
+fi
+
 instructions_link="$HOME/.copilot/copilot-instructions.md"
 resolved_instructions="$(readlink -f "$instructions_link" 2>/dev/null || true)"
 
@@ -35,29 +43,29 @@ cd "$repo_dir" || {
   exit 0
 }
 
-branch="$(git branch --show-current 2>/dev/null || true)"
+branch="$("$GIT" branch --show-current 2>/dev/null || true)"
 if [[ "$branch" != "main" ]]; then
   log_msg "skip: branch=$branch"
   exit 0
 fi
 
-if [[ -n "$(git status --porcelain 2>/dev/null)" ]]; then
+if [[ -n "$("$GIT" status --porcelain 2>/dev/null)" ]]; then
   log_msg "skip: dirty worktree"
   exit 0
 fi
 
-if ! git fetch --prune origin main >>"$log" 2>&1; then
+if ! "$GIT" fetch --prune origin main >>"$log" 2>&1; then
   log_msg "fetch failed"
   exit 0
 fi
 
-if [[ "$(git rev-parse HEAD 2>/dev/null)" == "$(git rev-parse origin/main 2>/dev/null)" ]]; then
+if [[ "$("$GIT" rev-parse HEAD 2>/dev/null)" == "$("$GIT" rev-parse origin/main 2>/dev/null)" ]]; then
   log_msg "already up-to-date"
   exit 0
 fi
 
-if git merge-base --is-ancestor HEAD origin/main 2>/dev/null; then
-  git merge --ff-only origin/main >>"$log" 2>&1 || log_msg "merge failed"
+if "$GIT" merge-base --is-ancestor HEAD origin/main 2>/dev/null; then
+  "$GIT" merge --ff-only origin/main >>"$log" 2>&1 || log_msg "merge failed"
 else
   log_msg "skip: local main diverged from origin/main"
 fi

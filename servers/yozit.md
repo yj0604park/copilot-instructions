@@ -133,11 +133,25 @@
     Slack 토큰 `~/.config/system-health/env`도 복사 완료 — **Synology ACL이 umask를 무시하므로
     복사 후 반드시 `chmod 600`** (그냥 두면 777로 생긴다).
 - **git이 기본 PATH 밖**: `/usr/local/bin/git`. SSH 비대화형에서 `git`은 command not found.
-  `auto-pull.sh`는 이 경로를 자체 탐색하므로 그냥 실행하면 된다.
+  `auto-pull.sh`와 `sync-instructions.sh`는 이 경로를 자체 탐색하므로 그냥 실행하면 된다.
 - **Copilot CLI 장시간 세션 금지**: yozit에서 tmux로 Copilot 세션을 계속 띄워두지 말 것.
   필요할 때 다른 머신에서 SSH로 붙는다. 근거: 2026-08-01에 먹통 세션 하나(`R` 상태 busy loop)가
   36시간 동안 CPU time 17시간을 태우며 2코어 중 절반을 상시 점유, `which <defunct>` 좀비도 누적.
   죽인 뒤 user CPU 30% → 4.4%. J4025 2코어라 프로세스 하나 꼬이면 머신 전체가 느려진다.
+- **Copilot CLI 비활성화 (2026-09-02 수행 완료)**: yozit에서는 이제 Copilot CLI를 쓰지 않는다.
+  DS220+는 2코어라 여유가 없고(위 "장시간 세션 금지" 항목), 실제로도 마지막 세션이 2026-08-01로
+  한 달 넘게 미사용이었다. 비용만 내고 효용이 없었다.
+  - 조치: `~/.local/bin/copilot`(176MB)과 `~/.copilot/hooks`를 `~/.copilot-disabled-20260902/`로 **이동**.
+    `~/.local/state/copilot/memo-agent-not-a-tty-*.env` 유령 에이전트 잔해 삭제.
+    삭제가 아니라 이동이므로 되돌릴 수 있다.
+  - **복구**: `mv ~/.copilot-disabled-20260902/copilot ~/.local/bin/ && mv ~/.copilot-disabled-20260902/hooks ~/.copilot/`
+  - **유지한 것**: `copilot-autopull.timer`(매시)와 `copilot-health.timer`(매일 23:00).
+    이름에만 copilot이 들어갈 뿐 실제로는 bash/python 스크립트라 CLI와 무관하다. autopull은
+    `servers/*.md`와 `scripts/system-health.py`를 최신으로 유지하는 데 여전히 필요하다.
+    비활성화 후 `auto-pull.sh` 정상 동작 확인함.
+  - **함정**: `scripts/sync-instructions.sh`는 yozit에서 원래부터 조용히 실패하고 있었다
+    (git이 기본 PATH 밖 — 아래 항목). 이제 CLI를 안 쓰므로 실질 영향은 없고,
+    repo 최신화는 autopull이 담당한다.
 - **homelab-node-agent**: Docker `~/docker/homelab-node-agent`(python:3.12-slim, `network_mode: host`,
   `/volume1` ro 마운트), `--loop` 5분 heartbeat. 체크아웃 `~/homelab-node-agent`, config `node-agent.json`
   (`memo_service_url=http://10.0.0.144:8100` LAN 직접 — **이 주소는 죽었다**, 아래 참조). 로그 `docker logs homelab-node-agent`.
