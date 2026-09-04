@@ -60,6 +60,17 @@
 - 마주침: `~/projects/apps/encounters`, LaunchAgent `com.paryoja.encounters`가 `0.0.0.0:3002`에서 실행.
   minitwo Traefik이 `http://minione.tail591527.ts.net:3002`로 연결하고
   `https://encounters.paryoja.com`으로 제공한다.
+  - **배포는 수동**이다 (CI/자동 pull 없음). main 머지 후:
+    ```bash
+    ssh minione 'export PATH=/usr/local/bin:$PATH; cd ~/projects/apps/encounters \
+      && git pull --ff-only origin main && npm ci && npm run build'
+    ssh minione 'launchctl kickstart -k "gui/$(id -u)/com.paryoja.encounters"'
+    ```
+  - **`export PATH=/usr/local/bin:$PATH`를 빼면 `npm: command not found`가 난다.** ssh 비로그인 zsh가
+    PATH를 좁게 잡는다. plist는 EnvironmentVariables에 PATH를 박아둬서 서비스 자체는 멀쩡한데
+    ssh로 수동 빌드할 때만 걸린다. 오진하기 쉬우니 주의.
+  - 빌드 산출물(`.next/`)이 워킹트리에 있으므로 `git pull` 전 `git status`로 로컬 변경이 없는지 볼 것.
+  - 확인: `curl -s -o /dev/null -w '%{http_code}' https://encounters.paryoja.com/`
 - status report: LaunchAgent `~/Library/LaunchAgents/com.paryoja.system-health.plist`, 매일 23:00, `scripts/system-health-macos.py` → Slack DM `C0AFWQ4CV08`
   - `system-health-macos.py`는 이제 포터블 `scripts/system-health.py`로 넘기는 shim. 재배선하려면 `scripts/setup-status-report.sh`
   - 토큰: `~/.config/system-health/env` (chmod 600)
